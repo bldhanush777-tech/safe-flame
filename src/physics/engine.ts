@@ -139,17 +139,18 @@ export function calculatePhysics(
 
   // Top-k weighted averages for Q, R, T
   const topK = materialMatches.slice(0, 3);
-  const avgQ = topK.length > 0 
-    ? topK.reduce((acc, curr) => acc + curr.record.qualityScore, 0) / topK.length 
-    : 0.70;
-  const avgR = topK.length > 0 
-    ? topK.reduce((acc, curr) => acc + curr.record.repeatability, 0) / topK.length 
-    : 0.65;
-  const avgT = topK.length > 0 
-    ? topK.reduce((acc, curr) => acc + curr.record.facilityTier, 0) / topK.length 
-    : 0.75;
-  const maxA = primaryMatch ? primaryMatch.applicability : 0.40;
+  const maxA = primaryMatch ? primaryMatch.applicability : 0.0;
   const coverageScore = calculateParametricCoverage(target);
+
+  const avgQ = topK.length > 0 
+    ? topK.reduce((acc, curr) => acc + curr.record.qualityScore * (0.25 + 0.75 * curr.applicability), 0) / topK.length 
+    : 0.15;
+  const avgR = topK.length > 0 
+    ? topK.reduce((acc, curr) => acc + curr.record.repeatability * (0.25 + 0.75 * curr.applicability), 0) / topK.length 
+    : 0.15;
+  const avgT = topK.length > 0 
+    ? topK.reduce((acc, curr) => acc + curr.record.facilityTier * (0.25 + 0.75 * curr.applicability), 0) / topK.length 
+    : 0.15;
 
   // Evidence Confidence Score C
   // C = 0.25 Q + 0.15 R + 0.30 A + 0.20 C_coverage + 0.10 T
