@@ -154,58 +154,63 @@ export const ResearchGapView: React.FC<ResearchGapViewProps> = ({
   };
 
   return (
-    <div className="p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 max-w-[1920px] mx-auto font-mono text-xs">
+    <div className="p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 max-w-[1920px] mx-auto font-sans text-xs">
       
       {/* LEFT & CENTER (7 Cols): N-Dimensional Heatmap Matrix */}
-      <div className="lg:col-span-7 flex flex-col gap-3">
+      <div className="lg:col-span-7 flex flex-col gap-4">
         
         {/* Heatmap Header */}
-        <div className="bg-obsidian-surface border border-obsidian-border rounded-sm p-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Grid className="w-4 h-4 text-cryo-cyan" />
-            <span className="font-semibold text-white tracking-micro uppercase text-[11px]">
-              N-Dimensional Microgravity Research-Gap Matrix
-            </span>
+        <div className="glass-panel p-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="squircle-icon w-8 h-8 text-accent">
+              <Grid className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="font-heading font-bold text-sm tracking-tight text-white">
+                N-Dimensional Microgravity Research-Gap Matrix
+              </h3>
+              <span className="text-[10px] text-slate-400">Bayesian experimental uncertainty mapping across flight materials</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2 text-[10px]">
-            <span className="flex items-center gap-1 text-emerald-400">
-              <span className="w-2.5 h-2.5 rounded bg-emerald-500/30 border border-emerald-500/50" /> High C (&ge;70%)
+          <div className="flex items-center gap-2.5 text-[11px] bg-obsidian-deep/80 px-3 py-1.5 rounded-full border border-white/10 font-mono">
+            <span className="flex items-center gap-1.5 text-emerald-400">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/40" /> High C (&ge;70%)
             </span>
-            <span className="flex items-center gap-1 text-amber-300">
-              <span className="w-2.5 h-2.5 rounded bg-amber-500/30 border border-amber-500/50" /> Moderate (40-69%)
+            <span className="flex items-center gap-1.5 text-amber-300">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-sm shadow-amber-400/40" /> Moderate (40-69%)
             </span>
-            <span className="flex items-center gap-1 text-rose-400">
-              <span className="w-2.5 h-2.5 rounded bg-rose-500/30 border border-rose-500/50" /> Gap Void (&lt;40%)
+            <span className="flex items-center gap-1.5 text-rose-400">
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shadow-rose-500/40" /> Gap Void (&lt;40%)
             </span>
           </div>
         </div>
 
         {/* Heatmap Interactive Table */}
-        <div className="bg-obsidian-surface border border-obsidian-border rounded-sm p-3 overflow-x-auto">
-          <div className="text-[10px] text-slate-400 mb-2">
+        <div className="glass-panel p-5 overflow-x-auto">
+          <div className="text-[11px] text-slate-300 mb-3 font-medium">
             Select any cell to inspect empirical void and generate certified NASA Experiment Test Specification:
           </div>
 
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-obsidian-border text-[10px] uppercase text-slate-400">
-                <th className="py-2 px-2.5">Material Family</th>
+              <tr className="border-b border-obsidian-border text-[10px] uppercase text-slate-400 font-semibold tracking-wider">
+                <th className="py-2.5 px-3">Material Family</th>
                 {MISSION_PRESETS.map(p => (
-                  <th key={p.id} className="py-2 px-2 text-center">
-                    <div>{p.name.split(' ')[0]}</div>
-                    <div className="text-[8px] text-slate-500 font-normal">
+                  <th key={p.id} className="py-2.5 px-2 text-center">
+                    <div className="font-bold text-white">{p.name.split(' ')[0]}</div>
+                    <div className="text-[9px] text-slate-400 font-mono">
                       {p.gravity === 0 ? '0g' : `${p.gravity}g`} | {(p.oxygen * 100).toFixed(0)}% O₂
                     </div>
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-obsidian-border/50">
+            <tbody className="divide-y divide-obsidian-border/40">
               {matrixData.map(row => (
-                <tr key={row.material.id} className="hover:bg-obsidian-elevated/30">
-                  <td className="py-2.5 px-2.5 font-semibold text-slate-200 whitespace-nowrap">
-                    <div>{row.material.name}</div>
-                    <div className="text-[9px] text-slate-500 font-normal">{row.material.chemicalName.split('/')[0]}</div>
+                <tr key={row.material.id} className="hover:bg-obsidian-elevated/40 transition-colors">
+                  <td className="py-3 px-3 font-semibold text-slate-200 whitespace-nowrap">
+                    <div className="font-heading font-bold text-white text-xs">{row.material.name}</div>
+                    <div className="text-[10px] text-slate-400 font-mono">{row.material.chemicalName.split('/')[0]}</div>
                   </td>
                   {row.cells.map(cell => {
                     const isSelected = 
@@ -221,17 +226,17 @@ export const ResearchGapView: React.FC<ResearchGapViewProps> = ({
                     }
 
                     return (
-                      <td key={cell.preset.id} className="py-2 px-1.5 text-center">
+                      <td key={cell.preset.id} className="py-2.5 px-1.5 text-center">
                         <button
                           onClick={() => setSelectedCell({ material: cell.material, preset: cell.preset })}
-                          className={`w-full py-2 px-1 rounded border transition-all text-center flex flex-col items-center justify-center gap-0.5 ${cellColor} ${
-                            isSelected ? 'ring-2 ring-cryo-cyan scale-105 font-bold shadow-lg shadow-cryo-cyan/20' : 'hover:scale-102'
+                          className={`w-full py-2.5 px-1 rounded-xl border transition-all text-center flex flex-col items-center justify-center gap-0.5 btn-squircle ${cellColor} ${
+                            isSelected ? 'ring-2 ring-accent scale-105 font-bold shadow-lg shadow-accent/25' : 'hover:scale-102'
                           }`}
                         >
-                          <span className="text-[11px] font-mono-numbers">
+                          <span className="text-xs font-mono-numbers font-bold">
                             {(c * 100).toFixed(0)}%
                           </span>
-                          <span className="text-[8px] opacity-80 uppercase tracking-tight">
+                          <span className="text-[8px] opacity-80 uppercase tracking-tight font-semibold">
                             {cell.isSafetyLocked ? 'LOCKED' : cell.riskLevel.slice(0, 4)}
                           </span>
                         </button>
@@ -243,30 +248,30 @@ export const ResearchGapView: React.FC<ResearchGapViewProps> = ({
             </tbody>
           </table>
 
-          <div className="mt-3 text-[10px] text-slate-500 flex justify-between items-center pt-2 border-t border-obsidian-border/50">
+          <div className="mt-4 text-[10px] text-slate-400 flex justify-between items-center pt-3 border-t border-obsidian-border/50">
             <span>Live updated by Bayesian applicability kernel against all 16 historical test flights.</span>
-            <span>Rows: 6 Materials × Cols: 5 Mission Regimes</span>
+            <span className="font-mono">Rows: 6 Materials × Cols: 5 Mission Regimes</span>
           </div>
         </div>
 
         {/* Selected Cell Executive Summary Card */}
-        <div className="bg-obsidian-deep border border-obsidian-border rounded-sm p-3 text-xs">
+        <div className="glass-panel p-4 text-xs">
           <div className="flex items-center justify-between mb-2">
-            <span className="font-bold text-white uppercase text-[11px] flex items-center gap-1.5">
-              <Target className="w-3.5 h-3.5 text-thermal-amber" />
+            <span className="font-heading font-bold text-white text-xs flex items-center gap-2">
+              <Target className="w-4 h-4 text-thermal-amber" />
               Selected Cell: {selectedCell.material.name} @ {selectedCell.preset.name}
             </span>
-            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-              currentResult.isSafetyLocked ? 'bg-plasma-red/20 text-plasma-red border border-plasma-red/40' : 'bg-emerald-500/20 text-emerald-400'
+            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+              currentResult.isSafetyLocked ? 'bg-plasma-red/20 text-plasma-red border border-plasma-red/40' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
             }`}>
               {currentResult.riskLevel}
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] text-slate-400">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs text-slate-300 mt-2">
             <div>Confidence: <strong className="text-white font-mono-numbers">{(currentResult.confidenceScore * 100).toFixed(1)}%</strong></div>
             <div>Expected Spread: <strong className="text-thermal-amber font-mono-numbers">{currentResult.flameSpreadRate.toFixed(3)} mm/s</strong></div>
-            <div>Effective LOC: <strong className="text-cryo-glow font-mono-numbers">{currentResult.effectiveLoc}%</strong></div>
+            <div>Effective LOC: <strong className="text-accent-glow font-mono-numbers">{currentResult.effectiveLoc}%</strong></div>
             <div>HRR Peak: <strong className="text-white font-mono-numbers">{currentResult.effectiveHrr} kW/m²</strong></div>
           </div>
         </div>
@@ -274,85 +279,94 @@ export const ResearchGapView: React.FC<ResearchGapViewProps> = ({
       </div>
 
       {/* RIGHT PANEL (5 Cols): NASA Targeted Experiment Specification Sheet */}
-      <div className="lg:col-span-5 flex flex-col gap-3">
-        <div className="bg-obsidian-surface border border-obsidian-border rounded-sm p-3 flex-1 flex flex-col">
+      <div className="lg:col-span-5 flex flex-col gap-4">
+        <div className="glass-panel p-5 flex-1 flex flex-col justify-between">
           
-          {/* Spec Header */}
-          <div className="flex items-center justify-between pb-2 mb-2 border-b border-obsidian-border">
-            <span className="text-slate-300 font-semibold uppercase tracking-micro text-[11px] flex items-center gap-1.5">
-              <FlaskConical className="w-3.5 h-3.5 text-cryo-cyan" />
-              NASA Experiment Specification Sheet
-            </span>
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={handleCopyMarkdown}
-                className="px-2 py-1 rounded bg-obsidian-deep border border-obsidian-border text-slate-300 hover:text-white flex items-center gap-1 text-[10px]"
-                title="Copy Markdown"
-              >
-                {copiedMarkdown ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                {copiedMarkdown ? 'Copied' : 'Copy'}
-              </button>
-              <button
-                onClick={handleDownloadMarkdown}
-                className="px-2 py-1 rounded bg-cryo-cyan/20 border border-cryo-cyan/40 text-cryo-glow hover:bg-cryo-cyan/30 flex items-center gap-1 text-[10px] font-semibold"
-                title="Download .md file"
-              >
-                <Download className="w-3 h-3" />
-                Download .MD
-              </button>
-            </div>
-          </div>
-
-          {/* Rendered Spec Content in Terminal Box */}
-          <div className="flex-1 bg-obsidian-deep p-3 rounded border border-obsidian-border overflow-y-auto max-h-[560px] text-[10.5px] leading-relaxed text-slate-300 space-y-3 font-mono">
-            
-            <div className="p-2 bg-obsidian-elevated rounded border border-obsidian-border text-[10px] space-y-0.5">
-              <div className="text-white font-bold">NASA-MSFC-TS-{selectedCell.material.id.toUpperCase()}-{selectedCell.preset.id.toUpperCase()}-2026</div>
-              <div className="text-slate-400">Target Facility: <span className="text-cryo-glow">{recommendedFacility}</span></div>
-              <div className="text-slate-400">Uncertainty Reduction ΔC: <strong className="text-emerald-400">+{((parseFloat(deltaCExpected)) * 100).toFixed(0)}%</strong></div>
-            </div>
-
-            <div>
-              <div className="text-white font-bold text-[11px] mb-1">1. SCIENTIFIC GAP & TEST JUSTIFICATION</div>
-              <p className="text-slate-400 text-[10.5px]">
-                {currentResult.isSafetyLocked 
-                  ? 'CRITICAL DEFICIT: Empirical applicability kernel is below safety certification baseline. Zero-g flame spread dynamics are unconstrained for this material.'
-                  : `Ground testing at 1g fails to model buoyant suppression. Microgravity tests are necessary to measure laminar opposed spread without natural convection interference.`}
-              </p>
-            </div>
-
-            <div>
-              <div className="text-white font-bold text-[11px] mb-1">2. CHAMBER ENVIRONMENT TARGETS</div>
-              <div className="grid grid-cols-2 gap-1.5 p-2 bg-obsidian-elevated/70 rounded text-[10px]">
-                <div>Atmosphere: <strong className="text-white">{(selectedCell.preset.oxygen * 100).toFixed(1)}% O₂</strong></div>
-                <div>Pressure: <strong className="text-white">{selectedCell.preset.pressurePsi.toFixed(1)} psia</strong></div>
-                <div>Gravity: <strong className="text-white">{selectedCell.preset.gravity.toFixed(2)} m/s²</strong></div>
-                <div>Flow Velocity: <strong className="text-white">{selectedCell.preset.ventilation.toFixed(2)} m/s</strong></div>
-                <div>Partial pO₂: <strong className="text-cryo-glow">{pO2Psi} psi ({pO2Kpa} kPa)</strong></div>
-                <div>Purge Gas: <strong className="text-white">N₂ 99.999% Balance</strong></div>
+          <div>
+            {/* Spec Header */}
+            <div className="flex items-center justify-between pb-3 mb-3 border-b border-obsidian-border">
+              <div className="flex items-center gap-2.5">
+                <div className="squircle-icon w-8 h-8 text-accent">
+                  <FlaskConical className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="font-heading font-bold text-sm tracking-tight text-white">
+                    NASA Experiment Specification Sheet
+                  </h4>
+                  <div className="text-[10px] text-slate-400">Formal drop tower & ISS SoFIE investigation protocol</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleCopyMarkdown}
+                  className="px-3 py-1.5 rounded-full bg-obsidian-deep/80 border border-obsidian-border text-slate-300 hover:text-white flex items-center gap-1.5 text-xs font-semibold btn-modern"
+                  title="Copy Markdown"
+                >
+                  {copiedMarkdown ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedMarkdown ? 'Copied' : 'Copy'}
+                </button>
+                <button
+                  onClick={handleDownloadMarkdown}
+                  className="px-3.5 py-1.5 rounded-full bg-accent/20 border border-accent/60 text-accent-glow hover:bg-accent/30 flex items-center gap-1.5 text-xs font-semibold shadow-md shadow-accent/20 btn-modern"
+                  title="Download .md file"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Download .MD
+                </button>
               </div>
             </div>
 
-            <div>
-              <div className="text-white font-bold text-[11px] mb-1">3. SAMPLE & RUN SPECIFICATION</div>
-              <ul className="list-disc pl-4 space-y-0.5 text-slate-400 text-[10px]">
-                <li>Sample Dimensions: 50 mm (W) × 120 mm (L) × {selectedCell.preset.thicknessMm.toFixed(2)} mm (T)</li>
-                <li>Sample Batch: 12 identical test coupons (8 for burn matrix, 4 spares)</li>
-                <li>Ignition: 29 AWG Nichrome wire, 2.5A pulse for 1.8 seconds</li>
-                <li>Sensors: 250 FPS Dual-Wavelength Pyrometer + Type-K array + 635nm Laser Obscuration</li>
-              </ul>
-            </div>
-
-            <div>
-              <div className="text-white font-bold text-[11px] mb-1">4. EXPECTED RISK REDUCTION METRICS</div>
-              <div className="p-2 bg-emerald-950/30 border border-emerald-500/30 rounded text-emerald-200 text-[10px]">
-                Projected Confidence Enhancement: {(currentResult.confidenceScore * 100).toFixed(1)}% &rarr; {(Math.min(0.98, currentResult.confidenceScore + parseFloat(deltaCExpected)) * 100).toFixed(1)}%
+            {/* Rendered Spec Content in Terminal Box */}
+            <div className="bg-obsidian-deep/90 p-4 rounded-2xl border border-obsidian-border overflow-y-auto max-h-[540px] text-xs leading-relaxed text-slate-300 space-y-3.5 font-mono shadow-inner">
+              
+              <div className="p-3 bg-obsidian-elevated/80 rounded-xl border border-obsidian-border text-xs space-y-1">
+                <div className="text-white font-bold">NASA-MSFC-TS-{selectedCell.material.id.toUpperCase()}-{selectedCell.preset.id.toUpperCase()}-2026</div>
+                <div className="text-slate-400">Target Facility: <span className="text-accent-glow">{recommendedFacility}</span></div>
+                <div className="text-slate-400">Uncertainty Reduction ΔC: <strong className="text-emerald-400">+{((parseFloat(deltaCExpected)) * 100).toFixed(0)}%</strong></div>
               </div>
-            </div>
 
+              <div>
+                <div className="text-white font-bold text-xs mb-1 font-heading">1. SCIENTIFIC GAP & TEST JUSTIFICATION</div>
+                <p className="text-slate-400 text-xs font-sans leading-relaxed">
+                  {currentResult.isSafetyLocked 
+                    ? 'CRITICAL DEFICIT: Empirical applicability kernel is below safety certification baseline. Zero-g flame spread dynamics are unconstrained for this material.'
+                    : `Ground testing at 1g fails to model buoyant suppression. Microgravity tests are necessary to measure laminar opposed spread without natural convection interference.`}
+                </p>
+              </div>
+
+              <div>
+                <div className="text-white font-bold text-xs mb-1 font-heading">2. CHAMBER ENVIRONMENT TARGETS</div>
+                <div className="grid grid-cols-2 gap-2 p-3 bg-obsidian-elevated/70 rounded-xl text-xs">
+                  <div>Atmosphere: <strong className="text-white font-mono-numbers">{(selectedCell.preset.oxygen * 100).toFixed(1)}% O₂</strong></div>
+                  <div>Pressure: <strong className="text-white font-mono-numbers">{selectedCell.preset.pressurePsi.toFixed(1)} psia</strong></div>
+                  <div>Gravity: <strong className="text-white font-mono-numbers">{selectedCell.preset.gravity.toFixed(2)} m/s²</strong></div>
+                  <div>Flow Velocity: <strong className="text-white font-mono-numbers">{selectedCell.preset.ventilation.toFixed(2)} m/s</strong></div>
+                  <div>Partial pO₂: <strong className="text-accent-glow font-mono-numbers">{pO2Psi} psi ({pO2Kpa} kPa)</strong></div>
+                  <div>Purge Gas: <strong className="text-white">N₂ 99.999% Balance</strong></div>
+                </div>
+              </div>
+
+              <div>
+                <div className="text-white font-bold text-xs mb-1 font-heading">3. SAMPLE & RUN SPECIFICATION</div>
+                <ul className="list-disc pl-4 space-y-1 text-slate-400 text-xs font-sans">
+                  <li>Sample Dimensions: 50 mm (W) × 120 mm (L) × {selectedCell.preset.thicknessMm.toFixed(2)} mm (T)</li>
+                  <li>Sample Batch: 12 identical test coupons (8 for burn matrix, 4 spares)</li>
+                  <li>Ignition: 29 AWG Nichrome wire, 2.5A pulse for 1.8 seconds</li>
+                  <li>Sensors: 250 FPS Dual-Wavelength Pyrometer + Type-K array + 635nm Laser Obscuration</li>
+                </ul>
+              </div>
+
+              <div>
+                <div className="text-white font-bold text-xs mb-1 font-heading">4. EXPECTED RISK REDUCTION METRICS</div>
+                <div className="p-3 bg-emerald-950/40 border border-emerald-500/40 rounded-xl text-emerald-200 text-xs">
+                  Projected Confidence Enhancement: <span className="font-mono-numbers">{(currentResult.confidenceScore * 100).toFixed(1)}% &rarr; {(Math.min(0.98, currentResult.confidenceScore + parseFloat(deltaCExpected)) * 100).toFixed(1)}%</span>
+                </div>
+              </div>
+
+            </div>
           </div>
 
-          <div className="pt-2 mt-2 border-t border-obsidian-border text-[9px] text-slate-500 text-center">
+          <div className="pt-3 mt-3 border-t border-obsidian-border text-[10px] text-slate-400 text-center">
             Compliant with NASA-STD-6001B Test 1 & ISS CIR SoFIE Combustion Investigation Protocol
           </div>
         </div>

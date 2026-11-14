@@ -93,6 +93,8 @@ export const App: React.FC = () => {
         activePresetId={activePresetId}
         setActivePresetId={setActivePresetId}
         physics={physics}
+        currentTheme={settings.activeTheme}
+        onThemeChange={th => setSettings(s => ({ ...s, activeTheme: th }))}
       />
 
       {/* Main Dedicated Workspace Page Viewport with Smooth Slide Transitions */}

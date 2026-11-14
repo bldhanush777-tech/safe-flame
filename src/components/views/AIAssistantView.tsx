@@ -271,23 +271,28 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({
   };
 
   return (
-    <div className="p-4 max-w-[1920px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 font-mono text-xs">
+    <div className="p-4 max-w-[1920px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 font-sans text-xs">
       
       {/* LEFT COLUMN: Interactive Chat & Voice Agent Viewport (8 Cols) */}
-      <div className="lg:col-span-8 flex flex-col gap-3">
+      <div className="lg:col-span-8 flex flex-col gap-4">
         
         {/* Agent Header */}
-        <div className="bg-obsidian-surface border border-obsidian-border rounded-sm p-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-cryo-cyan/20 border border-cryo-cyan flex items-center justify-center">
-              <Bot className="w-3.5 h-3.5 text-cryo-glow" />
+        <div className="glass-panel p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="squircle-icon w-9 h-9 text-accent">
+              <Bot className="w-5 h-5" />
             </div>
             <div>
-              <span className="font-semibold text-white uppercase tracking-micro text-[11px]">
-                ASTRA Aerospace Flight & Thermal AI Agent
-              </span>
-              <div className="text-[9px] text-slate-400">
-                Voice Assistant: <strong className="text-cryo-glow">{settings.voiceGender === 'male' ? 'Commander (Male)' : 'Flight Director (Female)'}</strong> • Auto-Speak: {settings.autoSpeak ? 'ON' : 'MUTED'}
+              <div className="flex items-center gap-2">
+                <h3 className="font-heading font-bold text-sm tracking-tight text-white">
+                  ASTRA Aerospace Flight & Thermal AI Agent
+                </h3>
+                <span className="flex items-center gap-1 text-[10px] bg-emerald-950/60 text-emerald-400 px-2.5 py-0.5 rounded-full border border-emerald-500/30 font-semibold font-mono">
+                  <Activity className="w-3 h-3 animate-pulse" /> ONLINE
+                </span>
+              </div>
+              <div className="text-[10px] text-slate-400 mt-0.5">
+                Voice Assistant: <strong className="text-accent-glow">{settings.voiceGender === 'male' ? 'Commander (Male)' : 'Flight Director (Female)'}</strong> • Auto-Speak: <span className="font-mono">{settings.autoSpeak ? 'ENABLED' : 'MUTED'}</span>
               </div>
             </div>
           </div>
@@ -295,46 +300,43 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSettings(prev => ({ ...prev, autoSpeak: !prev.autoSpeak }))}
-              className="p-1.5 rounded bg-obsidian-deep border border-obsidian-border text-slate-400 hover:text-white"
+              className="p-2 rounded-xl bg-obsidian-deep/80 border border-obsidian-border text-slate-400 hover:text-white transition-colors"
               title={settings.autoSpeak ? 'Mute AI Voice' : 'Enable AI Voice'}
             >
-              {settings.autoSpeak ? <Volume2 className="w-3.5 h-3.5 text-cryo-glow" /> : <VolumeX className="w-3.5 h-3.5" />}
+              {settings.autoSpeak ? <Volume2 className="w-4 h-4 text-accent-glow" /> : <VolumeX className="w-4 h-4" />}
             </button>
-            <span className="flex items-center gap-1 text-[10px] bg-emerald-950/60 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30">
-              <Activity className="w-3 h-3 animate-pulse" /> ONLINE
-            </span>
           </div>
         </div>
 
         {/* Message Log Viewport */}
-        <div className="bg-obsidian-surface border border-obsidian-border rounded-sm p-4 h-[440px] overflow-y-auto space-y-3 relative flex flex-col">
+        <div className="glass-panel p-5 h-[460px] overflow-y-auto space-y-3.5 relative flex flex-col shadow-inner">
           {messages.map(msg => {
             const isAstra = msg.sender === 'astra';
             return (
               <div
                 key={msg.id}
-                className={`flex gap-2.5 max-w-[85%] ${isAstra ? 'self-start' : 'self-end flex-row-reverse'}`}
+                className={`flex gap-3 max-w-[85%] ${isAstra ? 'self-start' : 'self-end flex-row-reverse'}`}
               >
-                <div className={`w-7 h-7 rounded flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                  isAstra ? 'bg-cryo-cyan/20 border border-cryo-cyan text-cryo-glow' : 'bg-thermal-amber/20 border border-thermal-amber text-thermal-amber'
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 shadow-md ${
+                  isAstra ? 'bg-accent/20 border border-accent/40 text-accent-glow' : 'bg-thermal-amber/20 border border-thermal-amber/40 text-thermal-amber'
                 }`}>
                   {isAstra ? <Bot className="w-4 h-4" /> : <User className="w-4 h-4" />}
                 </div>
 
-                <div className={`p-3 rounded border text-[11px] leading-relaxed ${
+                <div className={`p-4 rounded-2xl border text-xs leading-relaxed shadow-sm ${
                   isAstra 
-                    ? 'bg-obsidian-deep border-obsidian-border text-slate-200' 
-                    : 'bg-obsidian-elevated border-obsidian-border text-white'
+                    ? 'bg-obsidian-deep/90 border-obsidian-border text-slate-200 rounded-tl-sm' 
+                    : 'bg-obsidian-elevated/90 border-white/10 text-white rounded-tr-sm'
                 }`}>
-                  <div className="flex items-center justify-between gap-3 text-[9px] text-slate-500 mb-1 font-mono">
-                    <span className="font-bold text-slate-400">{isAstra ? 'ASTRA (AI)' : 'MISSION COMMANDER'}</span>
-                    <span>{msg.timestamp}</span>
+                  <div className="flex items-center justify-between gap-4 text-[10px] text-slate-400 mb-1.5 font-mono">
+                    <span className="font-bold text-slate-300">{isAstra ? 'ASTRA (AI)' : 'MISSION COMMANDER'}</span>
+                    <span className="opacity-70">{msg.timestamp}</span>
                   </div>
-                  <div>{msg.text}</div>
+                  <div className="text-slate-100">{msg.text}</div>
                   
                   {msg.actionTaken && (
-                    <div className="mt-1.5 pt-1.5 border-t border-white/5 flex items-center gap-1 text-[9px] text-cryo-glow font-bold">
-                      <CheckCircle className="w-3 h-3 text-emerald-400" />
+                    <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center gap-1.5 text-[10px] text-accent-glow font-bold">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
                       ACTION: {msg.actionTaken}
                     </div>
                   )}
@@ -346,17 +348,17 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({
         </div>
 
         {/* Input Bar with Voice Recognition & Text */}
-        <div className="bg-obsidian-surface border border-obsidian-border rounded-sm p-2 flex items-center gap-2">
+        <div className="glass-panel p-2 flex items-center gap-2.5 rounded-full">
           <button
             onClick={toggleListening}
-            className={`p-2.5 rounded transition-all flex items-center justify-center ${
+            className={`p-3 rounded-full transition-all flex items-center justify-center btn-modern ${
               isListening 
-                ? 'bg-plasma-red text-white animate-pulse shadow-lg shadow-plasma-red/30' 
-                : 'bg-obsidian-deep hover:bg-obsidian-elevated text-cryo-glow border border-obsidian-border'
+                ? 'bg-plasma-red text-white animate-pulse shadow-lg shadow-plasma-red/35' 
+                : 'bg-obsidian-deep/80 hover:bg-obsidian-elevated text-accent-glow border border-accent/30'
             }`}
             title={isListening ? 'Stop Listening' : 'Speak to ASTRA (Voice Input)'}
           >
-            {isListening ? <Mic className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+            <Mic className="w-4 h-4" />
           </button>
 
           <input
@@ -367,12 +369,12 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({
               if (e.key === 'Enter') processCommand(inputText);
             }}
             placeholder={isListening ? 'Listening to voice command...' : 'Type a command (e.g. "Take me to smoke simulator", "Set Artemis atmosphere")...'}
-            className="flex-1 bg-obsidian-deep border border-obsidian-border rounded px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cryo-cyan"
+            className="flex-1 bg-transparent px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none"
           />
 
           <button
             onClick={() => processCommand(inputText)}
-            className="p-2 rounded bg-cryo-cyan text-obsidian-deep font-bold hover:bg-cryo-glow transition-all"
+            className="p-3 rounded-full bg-accent text-obsidian-deep font-bold hover:bg-accent-glow transition-all shadow-md shadow-accent/25 btn-modern"
             title="Send"
           >
             <Send className="w-4 h-4" />
@@ -382,18 +384,20 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({
       </div>
 
       {/* RIGHT COLUMN: Quick Prompts & Autonomous Platform Capabilities (4 Cols) */}
-      <div className="lg:col-span-4 flex flex-col gap-3">
+      <div className="lg:col-span-4 flex flex-col gap-4">
         
         {/* Quick Voice & Command Shortcuts */}
-        <div className="bg-obsidian-surface border border-obsidian-border rounded-sm p-4">
-          <div className="flex items-center gap-1.5 pb-2 mb-3 border-b border-obsidian-border">
-            <Sparkles className="w-3.5 h-3.5 text-thermal-amber" />
-            <span className="font-semibold text-white uppercase text-xs">
+        <div className="glass-panel p-5">
+          <div className="flex items-center gap-2 pb-3 mb-4 border-b border-obsidian-border">
+            <div className="squircle-icon w-7 h-7 text-thermal-amber">
+              <Sparkles className="w-3.5 h-3.5" />
+            </div>
+            <h4 className="font-heading font-bold text-white text-xs uppercase tracking-tight">
               Quick Voice Command Prompts
-            </span>
+            </h4>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             {[
               { label: 'Take me to Smoke Simulator', icon: Wind },
               { label: 'Switch to Flame Lab', icon: Flame },
@@ -407,25 +411,27 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({
               <button
                 key={prompt.label}
                 onClick={() => processCommand(prompt.label)}
-                className="w-full p-2 rounded bg-obsidian-deep border border-obsidian-border text-slate-300 hover:text-white hover:border-cryo-cyan/50 text-left flex items-center justify-between text-[11px] transition-colors"
+                className="w-full p-2.5 rounded-xl bg-obsidian-deep/80 border border-obsidian-border text-slate-300 hover:text-white hover:border-accent/40 text-left flex items-center justify-between text-xs transition-all hover:translate-x-1"
               >
                 <span>"{prompt.label}"</span>
-                <prompt.icon className="w-3 h-3 text-slate-500 flex-shrink-0" />
+                <prompt.icon className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
               </button>
             ))}
           </div>
         </div>
 
         {/* AI Capabilities Information */}
-        <div className="bg-obsidian-surface border border-obsidian-border rounded-sm p-4 flex-1 text-[11px] text-slate-300 space-y-2">
-          <div className="text-xs font-semibold text-white uppercase tracking-micro flex items-center gap-1.5 pb-2 border-b border-obsidian-border">
-            <Terminal className="w-3.5 h-3.5 text-cryo-cyan" />
+        <div className="glass-panel p-5 flex-1 text-xs text-slate-300 space-y-2.5">
+          <div className="text-xs font-heading font-bold text-white uppercase tracking-tight flex items-center gap-2 pb-3 border-b border-obsidian-border">
+            <div className="squircle-icon w-7 h-7 text-accent">
+              <Terminal className="w-3.5 h-3.5" />
+            </div>
             Autonomous Platform Control
           </div>
-          <p className="text-slate-400">
+          <p className="text-slate-400 leading-relaxed text-xs">
             ASTRA is equipped with full telemetric hooks into the application state. When commanded, ASTRA can:
           </p>
-          <ul className="list-disc pl-4 space-y-1 text-slate-400 text-[10.5px]">
+          <ul className="list-disc pl-4 space-y-1.5 text-slate-400 text-xs leading-relaxed">
             <li>Instantly navigate between all 8 modules</li>
             <li>Adjust cabin oxygen (X_O2) and total pressure</li>
             <li>Switch mission presets (*Artemis, ISS, Mars, Pre-EVA, Earth*)</li>

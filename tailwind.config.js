@@ -9,17 +9,23 @@ export default {
     extend: {
       colors: {
         obsidian: {
-          DEFAULT: '#06080D',
-          deep: '#030407',
-          surface: '#0B0F17',
-          elevated: '#101522',
-          border: 'rgba(255, 255, 255, 0.08)',
-          highlight: 'rgba(56, 189, 248, 0.15)',
+          DEFAULT: 'var(--bg-primary, #07090E)',
+          deep: 'var(--bg-deep, #040508)',
+          surface: 'var(--bg-surface, #0D111A)',
+          elevated: 'var(--bg-elevated, #141A26)',
+          border: 'var(--border-color, rgba(255, 255, 255, 0.08))',
+          highlight: 'var(--accent-glow, rgba(56, 189, 248, 0.15))',
         },
         cryo: {
-          cyan: '#06B6D4',
-          glow: '#38BDF8',
-          dark: '#083344',
+          cyan: 'var(--accent-color, #06B6D4)',
+          glow: 'var(--accent-glow-text, #38BDF8)',
+          dark: 'var(--accent-dark, #083344)',
+        },
+        accent: {
+          DEFAULT: 'var(--accent-color, #06B6D4)',
+          glow: 'var(--accent-glow-text, #38BDF8)',
+          dark: 'var(--accent-dark, #083344)',
+          soft: 'var(--accent-glow, rgba(56, 189, 248, 0.2))',
         },
         thermal: {
           amber: '#F97316',
@@ -38,22 +44,17 @@ export default {
         }
       },
       fontFamily: {
+        sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
+        heading: ['"Outfit"', '"Plus Jakarta Sans"', 'sans-serif'],
         mono: ['"JetBrains Mono"', '"Fira Code"', 'monospace'],
-        sans: ['"Space Grotesk"', 'Inter', 'system-ui', 'sans-serif'],
       },
       letterSpacing: {
         'micro': '0.08em',
         'telemetry': '0.12em',
       },
-      animation: {
-        'pulse-subtle': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'flame-flicker': 'flameFlicker 0.15s infinite alternate ease-in-out',
-      },
-      keyframes: {
-        flameFlicker: {
-          '0%': { transform: 'scaleY(1.0) scaleX(1.0)' },
-          '100%': { transform: 'scaleY(1.04) scaleX(0.97)' },
-        }
+      boxShadow: {
+        'glow-accent': '0 0 25px -4px var(--accent-glow, rgba(56, 189, 248, 0.3))',
+        'glass-card': '0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border-color, rgba(255, 255, 255, 0.08))',
       }
     },
   },

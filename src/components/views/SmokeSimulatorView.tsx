@@ -406,41 +406,46 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
   const anyDetectorAlarmed = detectors.some(d => d.alarmed);
 
   return (
-    <div className="p-4 max-w-[1920px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 font-mono text-xs">
+    <div className="p-4 max-w-[1920px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 font-sans text-xs">
       
       {/* LEFT & CENTER (8 Cols): 2D Finite-Difference Habitat Cabin Grid & Transient Chart */}
-      <div className="lg:col-span-8 flex flex-col gap-3">
+      <div className="lg:col-span-8 flex flex-col gap-4">
         
         {/* Controls Toolbar */}
-        <div className="bg-obsidian-surface border border-obsidian-border rounded-sm p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2">
-            <Wind className="w-4 h-4 text-cryo-cyan" />
-            <span className="font-semibold text-white uppercase tracking-micro text-[11px]">
-              Habitat Smoke Transport & Suppression Solver
-            </span>
+        <div className="glass-panel p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2.5">
+            <div className="squircle-icon w-8 h-8 text-accent">
+              <Wind className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="font-heading font-bold text-sm tracking-tight text-white">
+                Habitat Smoke Transport & Suppression Solver
+              </h3>
+              <span className="text-[10px] text-slate-400">2D Navier-Stokes advection-diffusion finite difference model</span>
+            </div>
             {anyDetectorAlarmed && (
-              <span className="flex items-center gap-1 text-plasma-red bg-plasma-red/20 border border-plasma-red/40 px-2 py-0.5 rounded text-[10px] font-bold animate-pulse">
-                <BellRing className="w-3 h-3" />
+              <span className="flex items-center gap-1.5 text-plasma-red bg-plasma-red/20 border border-plasma-red/40 px-3 py-1 rounded-full text-[10px] font-bold animate-pulse ml-2 shadow-sm shadow-plasma-red/30">
+                <BellRing className="w-3.5 h-3.5" />
                 CABIN ALARM ACTIVE
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={() => setSoundEnabled(!soundEnabled)}
-              className="p-1.5 rounded bg-obsidian-deep border border-obsidian-border text-slate-400 hover:text-white"
+              className="p-2 rounded-xl bg-obsidian-deep/80 border border-obsidian-border text-slate-400 hover:text-white transition-colors"
               title={soundEnabled ? 'Mute Alarm Audio' : 'Enable Alarm Audio'}
             >
-              {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-cryo-glow" /> : <VolumeX className="w-3.5 h-3.5 text-slate-500" />}
+              {soundEnabled ? <Volume2 className="w-4 h-4 text-accent-glow" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
             </button>
 
             <button
               onClick={() => setIsPlaying(!isPlaying)}
-              className={`px-3 py-1.5 rounded flex items-center gap-1.5 font-bold transition-colors ${
+              className={`px-4 py-2 rounded-full flex items-center gap-2 font-bold text-xs tracking-wide transition-all shadow-md btn-modern ${
                 isPlaying 
-                  ? 'bg-thermal-amber/20 text-thermal-amber border border-thermal-amber/50' 
-                  : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 hover:bg-emerald-500/30'
+                  ? 'bg-thermal-amber/20 text-thermal-amber border border-thermal-amber/50 shadow-thermal-amber/20' 
+                  : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 hover:bg-emerald-500/30 shadow-emerald-500/20'
               }`}
             >
               {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
@@ -449,35 +454,35 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
 
             <button
               onClick={handleReset}
-              className="p-1.5 rounded bg-obsidian-deep hover:bg-obsidian-elevated text-slate-400 hover:text-white border border-obsidian-border"
+              className="p-2 rounded-xl bg-obsidian-deep/80 hover:bg-obsidian-elevated text-slate-400 hover:text-white border border-obsidian-border transition-colors"
               title="Reset Simulation"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
+              <RotateCcw className="w-4 h-4" />
             </button>
 
-            <div className="flex items-center gap-1 bg-obsidian-deep px-1.5 py-1 rounded border border-obsidian-border text-[10px]">
+            <div className="flex items-center gap-1 bg-obsidian-deep/80 p-1 rounded-xl border border-obsidian-border text-[10px]">
               {([1, 2, 4] as const).map(sp => (
                 <button
                   key={sp}
                   onClick={() => setSimSpeed(sp)}
-                  className={`px-1.5 py-0.2 rounded ${simSpeed === sp ? 'text-cryo-glow font-bold bg-cryo-cyan/20' : 'text-slate-500'}`}
+                  className={`px-2 py-0.5 rounded-lg font-medium transition-colors ${simSpeed === sp ? 'text-accent-glow font-bold bg-accent/20' : 'text-slate-400 hover:text-slate-200'}`}
                 >
                   {sp}x
                 </button>
               ))}
             </div>
 
-            <div className="text-right min-w-[75px]">
+            <div className="text-right min-w-[75px] bg-obsidian-deep/80 px-2.5 py-1 rounded-xl border border-white/10">
               <span className="text-[10px] text-slate-400">T = </span>
               <span className="font-bold text-white text-xs font-mono-numbers">{simTime.toFixed(1)}s</span>
-              <span className="text-[9px] text-slate-500"> / 120s</span>
+              <span className="text-[10px] text-slate-500"> / 120s</span>
             </div>
           </div>
         </div>
 
         {/* Time Slider Scrubber */}
-        <div className="bg-obsidian-deep px-4 py-2 border border-obsidian-border rounded-sm flex items-center gap-3 text-xs">
-          <Clock className="w-3.5 h-3.5 text-slate-400" />
+        <div className="glass-panel px-5 py-3 flex items-center gap-3 text-xs">
+          <Clock className="w-4 h-4 text-slate-400 flex-shrink-0" />
           <input
             type="range"
             min={0}
@@ -489,21 +494,21 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
               setSimTime(targetTime);
               runSimulationUpToTime(targetTime);
             }}
-            className="flex-1 accent-cryo-cyan h-1.5 bg-obsidian-elevated rounded cursor-pointer"
+            className="flex-1 accent-accent h-2 bg-obsidian-elevated rounded-full cursor-pointer"
           />
-          <span className="text-[10px] text-slate-400">Deterministic Time Scrubber</span>
+          <span className="text-[10px] text-slate-400 whitespace-nowrap">Deterministic Time Scrubber</span>
         </div>
 
         {/* Placement Selector Buttons */}
         <div className="flex items-center gap-2 flex-wrap text-xs">
-          <span className="text-[10px] text-slate-400 uppercase tracking-micro">INTERACTIVE PLACEMENT:</span>
+          <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">INTERACTIVE PLACEMENT:</span>
           
           <button
             onClick={() => setActivePlacementTool(activePlacementTool === 'FIRE' ? 'NONE' : 'FIRE')}
-            className={`px-2 py-1 rounded flex items-center gap-1.5 text-[11px] border ${
+            className={`px-3 py-1.5 rounded-full flex items-center gap-2 text-xs font-medium border transition-all btn-modern ${
               activePlacementTool === 'FIRE' 
-                ? 'bg-plasma-red/20 text-plasma-red border-plasma-red' 
-                : 'bg-obsidian-surface border-obsidian-border text-slate-300 hover:text-white'
+                ? 'bg-plasma-red/20 text-plasma-red border-plasma-red shadow-md shadow-plasma-red/20' 
+                : 'bg-obsidian-elevated/70 border-obsidian-border text-slate-300 hover:text-white'
             }`}
           >
             <Flame className="w-3.5 h-3.5 text-plasma-red" />
@@ -512,10 +517,10 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
 
           <button
             onClick={() => setActivePlacementTool(activePlacementTool === 'DET_ALPHA' ? 'NONE' : 'DET_ALPHA')}
-            className={`px-2 py-1 rounded flex items-center gap-1 text-[11px] border ${
+            className={`px-3 py-1.5 rounded-full flex items-center gap-1.5 text-xs font-medium border transition-all btn-modern ${
               activePlacementTool === 'DET_ALPHA' 
-                ? 'bg-cryo-cyan/20 text-cryo-glow border-cryo-cyan' 
-                : 'bg-obsidian-surface border-obsidian-border text-slate-300'
+                ? 'bg-accent/20 text-accent-glow border-accent shadow-md shadow-accent/20' 
+                : 'bg-obsidian-elevated/70 border-obsidian-border text-slate-300 hover:text-white'
             }`}
           >
             Move Det α (Ceiling)
@@ -523,10 +528,10 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
 
           <button
             onClick={() => setActivePlacementTool(activePlacementTool === 'DET_BETA' ? 'NONE' : 'DET_BETA')}
-            className={`px-2 py-1 rounded flex items-center gap-1 text-[11px] border ${
+            className={`px-3 py-1.5 rounded-full flex items-center gap-1.5 text-xs font-medium border transition-all btn-modern ${
               activePlacementTool === 'DET_BETA' 
-                ? 'bg-cryo-cyan/20 text-cryo-glow border-cryo-cyan' 
-                : 'bg-obsidian-surface border-obsidian-border text-slate-300'
+                ? 'bg-accent/20 text-accent-glow border-accent shadow-md shadow-accent/20' 
+                : 'bg-obsidian-elevated/70 border-obsidian-border text-slate-300 hover:text-white'
             }`}
           >
             Move Det β (Central)
@@ -534,10 +539,10 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
 
           <button
             onClick={() => setActivePlacementTool(activePlacementTool === 'DET_GAMMA' ? 'NONE' : 'DET_GAMMA')}
-            className={`px-2 py-1 rounded flex items-center gap-1 text-[11px] border ${
+            className={`px-3 py-1.5 rounded-full flex items-center gap-1.5 text-xs font-medium border transition-all btn-modern ${
               activePlacementTool === 'DET_GAMMA' 
-                ? 'bg-cryo-cyan/20 text-cryo-glow border-cryo-cyan' 
-                : 'bg-obsidian-surface border-obsidian-border text-slate-300'
+                ? 'bg-accent/20 text-accent-glow border-accent shadow-md shadow-accent/20' 
+                : 'bg-obsidian-elevated/70 border-obsidian-border text-slate-300 hover:text-white'
             }`}
           >
             Move Det γ (Exhaust)
@@ -551,21 +556,21 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
         </div>
 
         {/* 2D Habitat Grid Visualizer */}
-        <div className="bg-obsidian-surface border border-obsidian-border rounded-sm p-4 relative overflow-hidden">
-          <div className="flex justify-between items-center text-[10px] text-slate-500 mb-2 font-mono">
-            <span className="flex items-center gap-1 text-cryo-cyan">
+        <div className="glass-panel p-5 relative overflow-hidden">
+          <div className="flex justify-between items-center text-[10px] text-slate-400 mb-3 font-mono">
+            <span className="flex items-center gap-1.5 text-accent-glow font-medium">
               ← ECLSS Supply Duct ({uVent.toFixed(2)} m/s Forced Air)
             </span>
-            <span className="text-slate-400">
+            <span className="text-slate-300 bg-obsidian-deep/80 px-2.5 py-0.5 rounded-full border border-white/10">
               Buoyancy: {atmosphere.gravity === 0 ? 'SUPPRESSED (G*=0)' : `v_b = ${uBuoyant.toFixed(2)} m/s`}
             </span>
-            <span className="flex items-center gap-1 text-slate-400">
+            <span className="flex items-center gap-1 text-slate-400 font-medium">
               Aft Habitat Return Grate →
             </span>
           </div>
 
           {/* Grid Table */}
-          <div className="grid grid-cols-12 gap-1.5 p-2 bg-obsidian-deep rounded border border-obsidian-border/80">
+          <div className="grid grid-cols-12 gap-1.5 p-3 bg-obsidian-deep/90 rounded-2xl border border-obsidian-border">
             {smokeGridRef.current.map((row, y) =>
               row.map((conc, x) => {
                 const isFire = x === fireCell.x && y === fireCell.y;
@@ -574,7 +579,7 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
                 const detGamma = detectors.find(d => d.id === 'det_gamma' && d.x === x && d.y === y);
                 const anyDet = detAlpha || detBeta || detGamma;
 
-                let cellBg = 'rgba(15, 23, 42, 0.4)';
+                let cellBg = 'rgba(15, 23, 42, 0.45)';
                 if (conc > 1) {
                   const alpha = Math.min(0.95, 0.2 + conc * 0.008);
                   cellBg = `rgba(${Math.min(240, 40 + conc * 2.0)}, ${Math.min(180, 30 + conc * 1.5)}, ${Math.min(180, 30 + conc * 1.2)}, ${alpha})`;
@@ -585,28 +590,28 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
                     key={`${x}-${y}`}
                     onClick={() => handleCellClick(x, y)}
                     style={{ backgroundColor: cellBg }}
-                    className={`h-16 rounded border transition-all relative flex flex-col justify-between p-1 cursor-pointer select-none ${
+                    className={`h-16 rounded-xl border transition-all relative flex flex-col justify-between p-1.5 cursor-pointer select-none ${
                       isFire 
-                        ? 'border-plasma-red shadow-lg shadow-plasma-red/30' 
+                        ? 'border-plasma-red shadow-lg shadow-plasma-red/35 ring-1 ring-plasma-red' 
                         : anyDet 
-                        ? anyDet.alarmed ? 'border-plasma-red animate-pulse' : 'border-cryo-cyan' 
-                        : 'border-white/5 hover:border-cryo-cyan/50'
+                        ? anyDet.alarmed ? 'border-plasma-red animate-pulse ring-1 ring-plasma-red' : 'border-accent shadow-sm' 
+                        : 'border-white/5 hover:border-accent/40'
                     }`}
                   >
                     <div className="flex justify-between items-center text-[8px] font-mono leading-none">
                       <span className="text-slate-500">{x},{y}</span>
                       {detAlpha && (
-                        <span className={`px-1 py-0.2 rounded font-bold ${detAlpha.alarmed ? 'bg-plasma-red text-white' : 'bg-cryo-cyan text-obsidian-deep'}`}>
+                        <span className={`px-1 py-0.5 rounded-full font-bold ${detAlpha.alarmed ? 'bg-plasma-red text-white' : 'bg-accent text-obsidian-deep'}`}>
                           α {detAlpha.alarmed ? 'ALARM' : ''}
                         </span>
                       )}
                       {detBeta && (
-                        <span className={`px-1 py-0.2 rounded font-bold ${detBeta.alarmed ? 'bg-plasma-red text-white' : 'bg-cryo-cyan text-obsidian-deep'}`}>
+                        <span className={`px-1 py-0.5 rounded-full font-bold ${detBeta.alarmed ? 'bg-plasma-red text-white' : 'bg-accent text-obsidian-deep'}`}>
                           β {detBeta.alarmed ? 'ALARM' : ''}
                         </span>
                       )}
                       {detGamma && (
-                        <span className={`px-1 py-0.2 rounded font-bold ${detGamma.alarmed ? 'bg-plasma-red text-white' : 'bg-cryo-cyan text-obsidian-deep'}`}>
+                        <span className={`px-1 py-0.5 rounded-full font-bold ${detGamma.alarmed ? 'bg-plasma-red text-white' : 'bg-accent text-obsidian-deep'}`}>
                           γ {detGamma.alarmed ? 'ALARM' : ''}
                         </span>
                       )}
@@ -617,7 +622,7 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
                         <Flame className="w-5 h-5 text-plasma-red animate-bounce" />
                       )}
                       {anyDet && !isFire && (
-                        <Radio className={`w-3.5 h-3.5 ${anyDet.alarmed ? 'text-plasma-red animate-spin' : 'text-cryo-cyan'}`} />
+                        <Radio className={`w-3.5 h-3.5 ${anyDet.alarmed ? 'text-plasma-red animate-spin' : 'text-accent-glow'}`} />
                       )}
                     </div>
 
@@ -630,10 +635,10 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
             )}
           </div>
 
-          <div className="mt-2 text-[10px] text-slate-500 flex items-center justify-between">
+          <div className="mt-3 text-[10px] text-slate-400 flex items-center justify-between">
             <span>Grid Resolution: Δx=0.5m, Δy=0.5m | Solved via Upwind Advection-Diffusion PDE</span>
             {isDischarging && (
-              <span className="text-thermal-amber font-bold flex items-center gap-1 animate-pulse">
+              <span className="text-thermal-amber font-bold flex items-center gap-1.5 animate-pulse bg-thermal-amber/15 px-2.5 py-0.5 rounded-full border border-thermal-amber/30">
                 <Droplet className="w-3.5 h-3.5" /> SUPPRESSANT DISCHARGING ({suppressantActiveRemaining.toFixed(1)}s)
               </span>
             )}
@@ -641,35 +646,42 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
         </div>
 
         {/* Real-time Obscuration Transient Telemetry Chart */}
-        <div className="bg-obsidian-surface border border-obsidian-border rounded-sm p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-slate-300 font-semibold uppercase tracking-micro text-[11px] flex items-center gap-1.5">
-              <Activity className="w-3.5 h-3.5 text-cryo-cyan" />
-              Transient Smoke Obscuration Curve (% / m)
-            </span>
-            <div className="flex items-center gap-3 text-[10px]">
-              <span className="text-sky-400">Det α (Ceiling)</span>
-              <span className="text-emerald-400">Det β (Aisle)</span>
-              <span className="text-purple-400">Det γ (Exhaust)</span>
-              <span className="text-plasma-red font-bold">1.5% Threshold</span>
+        <div className="glass-panel p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="squircle-icon w-8 h-8 text-accent">
+                <Activity className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="font-heading font-bold text-sm tracking-tight text-white">
+                  Transient Smoke Obscuration Curve (% / m)
+                </h4>
+                <div className="text-[10px] text-slate-400">Continuous optical density telemetry at sensor nodes</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 text-[10px] bg-obsidian-deep/80 px-3 py-1 rounded-full border border-white/10 font-mono">
+              <span className="text-sky-400 flex items-center gap-1"><span className="w-2 h-0.5 bg-sky-400"/> Det α (Ceiling)</span>
+              <span className="text-emerald-400 flex items-center gap-1"><span className="w-2 h-0.5 bg-emerald-400"/> Det β (Aisle)</span>
+              <span className="text-purple-400 flex items-center gap-1"><span className="w-2 h-0.5 bg-purple-400"/> Det γ (Exhaust)</span>
+              <span className="text-plasma-red font-bold flex items-center gap-1"><span className="w-2 h-0.5 bg-plasma-red"/> 1.5% Threshold</span>
             </div>
           </div>
 
-          <div className="w-full h-36">
+          <div className="w-full h-40">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={telemetryHistory} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" />
-                <XAxis dataKey="time" stroke="#64748B" tick={{ fontSize: 9, fill: '#64748B' }} tickFormatter={v => `${v}s`} />
-                <YAxis stroke="#64748B" tick={{ fontSize: 9, fill: '#64748B' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.06)" />
+                <XAxis dataKey="time" stroke="#64748B" tick={{ fontSize: 9, fill: '#94A3B8' }} tickFormatter={v => `${v}s`} />
+                <YAxis stroke="#64748B" tick={{ fontSize: 9, fill: '#94A3B8' }} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#0B0F17', borderColor: 'rgba(255,255,255,0.1)', fontSize: '11px', fontFamily: 'JetBrains Mono' }}
+                  contentStyle={{ backgroundColor: 'var(--bg-surface, #0B0F17)', borderColor: 'rgba(255,255,255,0.15)', fontSize: '11px', borderRadius: '12px' }}
                   formatter={(val: any) => [`${val} %/m`, '']}
                   labelFormatter={lbl => `T = ${lbl}s`}
                 />
                 <ReferenceLine y={1.5} stroke="#EF4444" strokeDasharray="3 3" label={{ value: 'ALARM', fill: '#EF4444', fontSize: 8 }} />
-                <Line type="monotone" dataKey="detAlpha" stroke="#38BDF8" strokeWidth={1.5} dot={false} name="Det Alpha" />
-                <Line type="monotone" dataKey="detBeta" stroke="#10B981" strokeWidth={1.5} dot={false} name="Det Beta" />
-                <Line type="monotone" dataKey="detGamma" stroke="#C084FC" strokeWidth={1.5} dot={false} name="Det Gamma" />
+                <Line type="monotone" dataKey="detAlpha" stroke="#38BDF8" strokeWidth={2} dot={false} name="Det Alpha" />
+                <Line type="monotone" dataKey="detBeta" stroke="#10B981" strokeWidth={2} dot={false} name="Det Beta" />
+                <Line type="monotone" dataKey="detGamma" stroke="#C084FC" strokeWidth={2} dot={false} name="Det Gamma" />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -678,45 +690,51 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
       </div>
 
       {/* RIGHT COLUMN (4 Cols): Detector Status, Time-to-Alarm & Suppressant Controls */}
-      <div className="lg:col-span-4 flex flex-col gap-3">
+      <div className="lg:col-span-4 flex flex-col gap-4">
         
         {/* Detector Status & Time-to-Alarm HUD */}
-        <div className="bg-obsidian-surface border border-obsidian-border rounded-sm p-4">
-          <div className="flex items-center justify-between pb-2 mb-3 border-b border-obsidian-border">
-            <span className="text-slate-300 font-semibold uppercase tracking-micro text-[11px] flex items-center gap-1.5">
-              <Radio className="w-3.5 h-3.5 text-cryo-cyan" />
-              Sensor Detection Readouts
-            </span>
-            <span className="text-[10px] text-slate-400">Alarm Limit: 1.2–1.8 %/m</span>
+        <div className="glass-panel p-5">
+          <div className="flex items-center justify-between pb-3 mb-4 border-b border-obsidian-border">
+            <div className="flex items-center gap-2.5">
+              <div className="squircle-icon w-8 h-8 text-accent">
+                <Radio className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="font-heading font-bold text-sm tracking-tight text-white">
+                  Sensor Detection Readouts
+                </h4>
+                <div className="text-[10px] text-slate-400">Alarm Limit: 1.2–1.8 %/m</div>
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {detectors.map(det => (
               <div 
                 key={det.id}
-                className={`p-2.5 rounded border text-[11px] ${
+                className={`p-3.5 rounded-2xl border text-xs transition-all ${
                   det.alarmed 
-                    ? 'bg-plasma-red/15 border-plasma-red/60 text-white shadow-sm shadow-plasma-red/20' 
-                    : 'bg-obsidian-deep border-obsidian-border text-slate-300'
+                    ? 'bg-plasma-red/15 border-plasma-red/60 text-white shadow-md shadow-plasma-red/20' 
+                    : 'bg-obsidian-deep/80 border-obsidian-border text-slate-300'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-semibold">{det.name}</span>
-                  <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${
+                  <span className="font-heading font-bold text-white text-xs">{det.name}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
                     det.alarmed ? 'bg-plasma-red text-white animate-pulse' : 'bg-slate-800 text-slate-400'
                   }`}>
                     {det.alarmed ? 'ALARM TRIGGERED' : 'CLEAR'}
                   </span>
                 </div>
-                <div className="text-[10px] text-slate-400 mb-1">
+                <div className="text-[10px] text-slate-400 mb-1.5">
                   Sensor: {det.type} | Pos: [{det.x}, {det.y}]
                 </div>
-                <div className="flex justify-between text-[10px]">
-                  <span>Obscuration: <strong className={det.alarmed ? 'text-plasma-red' : 'text-slate-200'}>{det.currentObscuration.toFixed(2)} %/m</strong></span>
-                  <span>Threshold: {det.alarmThreshold.toFixed(1)} %/m</span>
+                <div className="flex justify-between text-[11px]">
+                  <span>Obscuration: <strong className={det.alarmed ? 'text-plasma-red font-mono-numbers' : 'text-white font-mono-numbers'}>{det.currentObscuration.toFixed(2)} %/m</strong></span>
+                  <span className="text-slate-400">Threshold: {det.alarmThreshold.toFixed(1)} %/m</span>
                 </div>
-                <div className="flex justify-between text-[10px] pt-1.5 border-t border-white/5 mt-1.5">
-                  <span>Time-to-Alarm (T_detect):</span>
+                <div className="flex justify-between text-[11px] pt-2 border-t border-white/5 mt-2">
+                  <span className="text-slate-400">Time-to-Alarm (T_detect):</span>
                   <span className="font-bold text-thermal-amber font-mono-numbers">
                     {det.alarmTimeSeconds !== null ? `${det.alarmTimeSeconds.toFixed(1)} s` : 'Pending (No Alarm)'}
                   </span>
@@ -727,36 +745,42 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
         </div>
 
         {/* Suppressant Selection & Microgravity Warning System */}
-        <div className="bg-obsidian-surface border border-obsidian-border rounded-sm p-4 flex-1 flex flex-col justify-between">
+        <div className="glass-panel p-5 flex-1 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between pb-2 mb-3 border-b border-obsidian-border">
-              <span className="text-slate-300 font-semibold uppercase tracking-micro text-[11px] flex items-center gap-1.5">
-                <Droplet className="w-3.5 h-3.5 text-thermal-amber" />
-                Suppressant Comparative Engine
-              </span>
-              <span className="text-[10px] text-slate-400">NASA Habitability</span>
+            <div className="flex items-center justify-between pb-3 mb-4 border-b border-obsidian-border">
+              <div className="flex items-center gap-2.5">
+                <div className="squircle-icon w-8 h-8 text-thermal-amber">
+                  <Droplet className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="font-heading font-bold text-sm tracking-tight text-white">
+                    Suppressant Comparative Engine
+                  </h4>
+                  <div className="text-[10px] text-slate-400">NASA certified spacecraft clean agents</div>
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-2 mb-3">
+            <div className="space-y-2 mb-4">
               {SUPPRESSANT_OPTIONS.map(sup => {
                 const isSelected = selectedSuppressant === sup.id;
                 return (
                   <button
                     key={sup.id}
                     onClick={() => setSelectedSuppressant(sup.id)}
-                    className={`w-full text-left p-2.5 rounded border transition-colors ${
+                    className={`w-full text-left p-3 rounded-2xl border transition-all ${
                       isSelected 
-                        ? 'bg-thermal-amber/20 border-thermal-amber text-white font-semibold' 
-                        : 'bg-obsidian-deep border-obsidian-border text-slate-400 hover:text-slate-200'
+                        ? 'bg-thermal-amber/20 border-thermal-amber text-white font-semibold shadow-md shadow-thermal-amber/15' 
+                        : 'bg-obsidian-deep/80 border-obsidian-border text-slate-400 hover:text-slate-200 hover:border-slate-600'
                     }`}
                   >
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span>{sup.name}</span>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-heading font-bold text-white">{sup.name}</span>
                       <span className="text-thermal-amber font-bold font-mono-numbers">
                         {(sup.extinctionEfficiency * 100).toFixed(0)}% Eff
                       </span>
                     </div>
-                    <div className="text-[9px] text-slate-500 mt-0.5">
+                    <div className="text-[10px] text-slate-400 mt-0.5">
                       {sup.formula} • {sup.cleanAgent ? 'Clean Agent' : 'Particulate/Liquid'}
                     </div>
                   </button>
@@ -765,14 +789,14 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
             </div>
 
             {currentSuppressantInfo && (
-              <div className="p-3 rounded bg-amber-950/40 border border-amber-500/40 text-amber-200 text-[10.5px] leading-relaxed mb-3">
-                <div className="flex items-center gap-1 font-bold text-thermal-amber mb-1">
-                  <AlertOctagon className="w-3.5 h-3.5 flex-shrink-0" />
+              <div className="p-3.5 rounded-2xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-xs leading-relaxed mb-4 shadow-sm">
+                <div className="flex items-center gap-1.5 font-heading font-bold text-thermal-amber mb-1">
+                  <AlertOctagon className="w-4 h-4 flex-shrink-0" />
                   MICROGRAVITY DISPERSION WARNING:
                 </div>
                 {currentSuppressantInfo.microgravityWarning}
-                <div className="mt-1 text-slate-400 text-[10px]">
-                  <span className="text-slate-300 font-semibold">Mechanism:</span> {currentSuppressantInfo.mechanism}
+                <div className="mt-1.5 text-slate-300 text-[10px]">
+                  <span className="text-slate-400 font-semibold">Mechanism:</span> {currentSuppressantInfo.mechanism}
                 </div>
               </div>
             )}
@@ -781,10 +805,10 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
           <button
             onClick={handleDischargeSuppressant}
             disabled={isDischarging}
-            className={`w-full py-2.5 px-3 rounded font-bold text-xs uppercase tracking-micro flex items-center justify-center gap-2 transition-all ${
+            className={`w-full py-3 px-4 rounded-full font-bold text-xs tracking-wide uppercase flex items-center justify-center gap-2 transition-all btn-modern ${
               isDischarging
-                ? 'bg-plasma-red text-white animate-pulse'
-                : 'bg-thermal-amber hover:bg-thermal-orange text-obsidian-deep shadow-lg shadow-thermal-amber/20'
+                ? 'bg-plasma-red text-white animate-pulse shadow-lg shadow-plasma-red/30'
+                : 'bg-thermal-amber hover:bg-thermal-orange text-obsidian-deep shadow-lg shadow-thermal-amber/25'
             }`}
           >
             <Zap className="w-4 h-4" />

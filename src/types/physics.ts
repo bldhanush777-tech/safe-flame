@@ -162,7 +162,7 @@ export interface SmokeDetector {
   alarmTimeSeconds: number | null;
 }
 
-export type AppTheme = 'obsidian' | 'apollo' | 'cryo' | 'mars';
+export type AppTheme = 'obsidian' | 'starship' | 'nebula' | 'mars';
 
 export interface AISettings {
   voiceGender: 'male' | 'female';

@@ -6,145 +6,174 @@
   :root {
     color-scheme: dark;
   }
-  
+
+  /* 1. Theme: Deep Space Obsidian (Default Cyber Cyan) */
+  :root[data-theme="obsidian"], :root {
+    --bg-primary: #07090E;
+    --bg-deep: #040508;
+    --bg-surface: #0D111A;
+    --bg-elevated: #141A26;
+    --border-color: rgba(255, 255, 255, 0.08);
+    --accent-color: #06B6D4;
+    --accent-glow-text: #38BDF8;
+    --accent-glow: rgba(56, 189, 248, 0.25);
+    --accent-dark: #083344;
+  }
+
+  /* 2. Theme: Starship Titanium (Solar Amber & Flame) */
+  :root[data-theme="starship"] {
+    --bg-primary: #0A0A0D;
+    --bg-deep: #050508;
+    --bg-surface: #13131A;
+    --bg-elevated: #1D1D27;
+    --border-color: rgba(249, 115, 22, 0.16);
+    --accent-color: #F97316;
+    --accent-glow-text: #FB923C;
+    --accent-glow: rgba(249, 115, 22, 0.3);
+    --accent-dark: #431407;
+  }
+
+  /* 3. Theme: Cosmic Nebula (Vivid Ultraviolet & Aurora) */
+  :root[data-theme="nebula"] {
+    --bg-primary: #080612;
+    --bg-deep: #04030A;
+    --bg-surface: #120E22;
+    --bg-elevated: #1C1533;
+    --border-color: rgba(168, 85, 247, 0.18);
+    --accent-color: #A855F7;
+    --accent-glow-text: #C084FC;
+    --accent-glow: rgba(168, 85, 247, 0.3);
+    --accent-dark: #3B0764;
+  }
+
+  /* 4. Theme: Martian Surface (Dusk Crimson & Coral) */
+  :root[data-theme="mars"] {
+    --bg-primary: #0F0607;
+    --bg-deep: #080203;
+    --bg-surface: #1C0D0F;
+    --bg-elevated: #291317;
+    --border-color: rgba(239, 68, 68, 0.18);
+    --accent-color: #EF4444;
+    --accent-glow-text: #F87171;
+    --accent-glow: rgba(239, 68, 68, 0.3);
+    --accent-dark: #450A0A;
+  }
+
   body {
-    background-color: #06080D;
-    color: #E2E8F0;
-    font-family: 'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg-primary, #07090E);
+    color: #F1F5F9;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     margin: 0;
     padding: 0;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease;
   }
 
-  /* Numeric readouts never jitter */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+    letter-spacing: -0.015em;
+  }
+
+  /* Tabular numbers for live telemetry readouts */
   .font-mono-numbers {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
     font-variant-numeric: tabular-nums;
   }
 }
 
-/* Aerospace Technical Reticle & Corner Brackets */
-.corner-bracket-container {
-  position: relative;
+/* Modern App Glass Surface Card */
+.glass-panel {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+  box-shadow: 0 12px 36px -12px rgba(0, 0, 0, 0.6);
+  transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
 }
 
-.corner-bracket-container::before,
-.corner-bracket-container::after {
-  content: '';
-  position: absolute;
+.glass-panel:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+/* Modern Card with Accent Ambient Glow */
+.modern-card {
+  background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-deep) 100%);
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(16px);
+  border-radius: 18px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modern-card:hover {
+  border-color: var(--accent-color);
+  box-shadow: 0 8px 30px -8px var(--accent-glow);
+}
+
+/* Modern Squircle Icon Badges */
+.icon-badge, .squircle-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border: 1px solid var(--border-color);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.icon-badge:hover, .squircle-icon:hover {
+  border-color: var(--accent-color);
+  transform: translateY(-1px) scale(1.04);
+}
+
+/* Modern Interactive Buttons */
+.btn-modern {
+  border-radius: 9999px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 10px -2px rgba(0, 0, 0, 0.5);
+}
+
+.btn-modern:hover {
+  transform: translateY(-1px);
+}
+
+.btn-modern:active {
+  transform: translateY(0) scale(0.97);
+}
+
+/* Modern Squircle Button */
+.btn-squircle {
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.4);
+}
+
+.btn-squircle:hover {
+  transform: translateY(-1px);
+}
+
+.btn-squircle:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Sleek Modern Scrollbars */
+::-webkit-scrollbar {
   width: 6px;
   height: 6px;
-  pointer-events: none;
-  z-index: 10;
 }
-
-.corner-bracket-tl-br::before {
-  top: -1px;
-  left: -1px;
-  border-top: 1.5px solid #38BDF8;
-  border-left: 1.5px solid #38BDF8;
-}
-
-.corner-bracket-tl-br::after {
-  bottom: -1px;
-  right: -1px;
-  border-bottom: 1.5px solid #38BDF8;
-  border-right: 1.5px solid #38BDF8;
-}
-
-.corner-bracket-amber::before {
-  top: -1px;
-  left: -1px;
-  border-top: 1.5px solid #F97316;
-  border-left: 1.5px solid #F97316;
-}
-
-.corner-bracket-amber::after {
-  bottom: -1px;
-  right: -1px;
-  border-bottom: 1.5px solid #F97316;
-  border-right: 1.5px solid #F97316;
-}
-
-/* Technical grid background */
-.tactical-grid {
-  background-size: 24px 24px;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-}
-
-.tactical-grid-dense {
-  background-size: 12px 12px;
-  background-image: 
-    linear-gradient(to right, rgba(56, 189, 248, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
-}
-
-/* Theme System */
-:root[data-theme="obsidian"] {
-  --bg-primary: #06080D;
-  --bg-surface: #0B0F17;
-  --bg-elevated: #101522;
-  --accent-color: #38BDF8;
-  --accent-glow: rgba(56, 189, 248, 0.2);
-  --border-color: rgba(255, 255, 255, 0.08);
-}
-
-:root[data-theme="apollo"] {
-  --bg-primary: #0C0A05;
-  --bg-surface: #17130A;
-  --bg-elevated: #241D0F;
-  --accent-color: #F59E0B;
-  --accent-glow: rgba(245, 158, 11, 0.25);
-  --border-color: rgba(245, 158, 11, 0.2);
-}
-
-:root[data-theme="cryo"] {
-  --bg-primary: #070F1A;
-  --bg-surface: #0D1C2E;
-  --bg-elevated: #132840;
-  --accent-color: #06B6D4;
-  --accent-glow: rgba(6, 182, 212, 0.25);
-  --border-color: rgba(6, 182, 212, 0.2);
-}
-
-:root[data-theme="mars"] {
-  --bg-primary: #0F0507;
-  --bg-surface: #1C0A0D;
-  --bg-elevated: #2A0F14;
-  --accent-color: #EF4444;
-  --accent-glow: rgba(239, 68, 68, 0.25);
-  --border-color: rgba(239, 68, 68, 0.2);
-}
-
-body {
-  background-color: var(--bg-primary, #06080D);
-  transition: background-color 0.3s ease;
-}
-
-/* CRT Scanline overlay for Apollo theme */
-:root[data-theme="apollo"] .tactical-grid::after {
-  content: " ";
-  display: block;
-  position: absolute;
-  top: 0; left: 0; bottom: 0; right: 0;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-  z-index: 100;
-  background-size: 100% 2px, 3px 100%;
-  pointer-events: none;
-  opacity: 0.6;
-}
-
 ::-webkit-scrollbar-track {
-  background: #06080D;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #38BDF8;
+  background: var(--accent-color);
 }
