@@ -19,11 +19,15 @@ import { ResearchGapView } from './components/views/ResearchGapView';
 import { AIAssistantView } from './components/views/AIAssistantView';
 import { SettingsView } from './components/views/SettingsView';
 import { FloatingTaskbar, PageId } from './components/navigation/FloatingTaskbar';
+import { IntroVideoModal } from './components/intro/IntroVideoModal';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const App: React.FC = () => {
   const defaultPreset = MISSION_PRESETS[0];
   
+  // Introductory cinematic video state (starts active on application launch)
+  const [showIntro, setShowIntro] = useState<boolean>(true);
+
   // Atmosphere state
   const [atmosphere, setAtmosphere] = useState<AtmosphereState>({
     oxygen: defaultPreset.oxygen,
@@ -73,6 +77,13 @@ export const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-obsidian text-slate-200 flex flex-col font-sans selection:bg-cryo-cyan/30 selection:text-white pb-20 relative transition-colors duration-300">
       
+      {/* Cinematic Introductory Video Layer */}
+      <AnimatePresence>
+        {showIntro && (
+          <IntroVideoModal onComplete={() => setShowIntro(false)} />
+        )}
+      </AnimatePresence>
+
       {/* Persistent Top Telemetry Command Bar */}
       <TopTelemetryBar
         atmosphere={atmosphere}
@@ -221,6 +232,7 @@ export const App: React.FC = () => {
               <SettingsView
                 settings={settings}
                 setSettings={setSettings}
+                onReplayIntro={() => setShowIntro(true)}
               />
             </motion.div>
           )}

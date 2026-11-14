@@ -15,17 +15,20 @@ import {
   Radio, 
   Flame, 
   Layers,
-  Gauge
+  Gauge,
+  Film
 } from 'lucide-react';
 
 interface SettingsViewProps {
   settings: AISettings;
   setSettings: React.Dispatch<React.SetStateAction<AISettings>>;
+  onReplayIntro?: () => void;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
   settings,
   setSettings,
+  onReplayIntro,
 }) => {
   const themes: Array<{
     id: AppTheme;
@@ -168,6 +171,30 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Cinematic Mission Intro Video Replay */}
+        {onReplayIntro && (
+          <div className="bg-obsidian-surface border border-obsidian-border rounded-sm p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-white font-semibold text-xs flex items-center gap-1.5">
+                  <Film className="w-4 h-4 text-cryo-glow" />
+                  Spacecraft Atmospheric Intro Video
+                </div>
+                <div className="text-[10px] text-slate-400 mt-0.5">
+                  Replay the high-definition launch visualization with mission audio and ratio controls.
+                </div>
+              </div>
+              <button
+                onClick={onReplayIntro}
+                className="px-3 py-1.5 rounded bg-cryo-cyan/20 hover:bg-cryo-cyan text-cryo-glow hover:text-black border border-cryo-cyan/50 text-xs font-bold uppercase transition-all flex items-center gap-1.5"
+              >
+                <Film className="w-3.5 h-3.5" />
+                Replay Intro
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* RIGHT COLUMN: AI Voice Agent Configuration (5 Cols) */}
