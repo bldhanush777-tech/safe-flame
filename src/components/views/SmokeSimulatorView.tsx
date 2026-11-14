@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
+import type { 
   AtmosphereState, 
   MaterialProperties, 
   PhysicsOutputs, 
@@ -7,6 +7,7 @@ import {
   SuppressantType 
 } from '../../types/physics';
 import { SUPPRESSANT_OPTIONS } from '../../data/materials';
+import { playAlarmBeep, playSuppressantDischargeSound } from '../../utils/audio';
 import { 
   Play, 
   Pause, 
@@ -18,11 +19,23 @@ import {
   Droplet, 
   AlertOctagon, 
   Zap, 
-  Sliders, 
   Clock, 
-  CheckCircle,
-  HelpCircle
+  BellRing,
+  Activity,
+  Layers,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
+import { 
+  ResponsiveContainer, 
+  LineChart, 
+  Line, 
+  XAxis, 
+  YAxis, 
+  Tooltip, 
+  CartesianGrid, 
+  ReferenceLine 
+} from 'recharts';
 
 interface SmokeSimulatorViewProps {
   atmosphere: AtmosphereState;
@@ -39,10 +52,10 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
   material,
   physics,
 }) => {
-  // Simulation transient state
   const [isPlaying, setIsPlaying] = useState(false);
   const [simTime, setSimTime] = useState(0); // 0 to 120 seconds
-  const [simSpeed, setSimSpeed] = useState<number>(1); // 1x, 2x, 4x
+  const [simSpeed, setSimSpeed] = useState<number>(1);
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   // Interactive positions
   const [fireCell, setFireCell] = useState<{ x: number; y: number }>({ x: 3, y: 4 });
@@ -56,7 +69,7 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
       type: 'Photoelectric',
       x: 5,
       y: 0,
-      alarmThreshold: 1.5, // 1.5 % obs/m
+      alarmThreshold: 1.5,
       currentObscuration: 0,
       alarmed: false,
       alarmTimeSeconds: null,
@@ -85,6 +98,14 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
     },
   ]);
 
+  // Detector time-history for telemetry graph
+  const [telemetryHistory, setTelemetryHistory] = useState<Array<{
+    time: number;
+    detAlpha: number;
+    detBeta: number;
+    detGamma: number;
+  }>>([{ time: 0, detAlpha: 0, detBeta: 0, detGamma: 0 }]);
+
   // Suppressant System
   const [selectedSuppressant, setSelectedSuppressant] = useState<SuppressantType>('water_mist');
   const [isDischarging, setIsDischarging] = useState(false);
@@ -94,10 +115,9 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
   const smokeGridRef = useRef<number[][]>(
     Array.from({ length: GRID_ROWS }, () => Array(GRID_COLS).fill(0))
   );
-  const [renderCounter, setRenderCounter] = useState(0);
+  const [, setRenderTrigger] = useState(0);
 
-  // Velocity field (u, v) based on HVAC and Buoyancy
-  // Buoyant lift: v_buoyant = sqrt(G*) * 0.30 m/s
+  // Velocity parameters
   const sqrtG = Math.sqrt(Math.max(0, atmosphere.gravity / 9.81));
   const uBuoyant = sqrtG * 0.30;
   const uVent = atmosphere.ventilation;
@@ -117,10 +137,11 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
         alarmTimeSeconds: null,
       }))
     );
-    setRenderCounter(c => c + 1);
+    setTelemetryHistory([{ time: 0, detAlpha: 0, detBeta: 0, detGamma: 0 }]);
+    setRenderTrigger(c => c + 1);
   };
 
-  // Re-simulate from t=0 to targetTime for instant, deterministic scrubbing
+  // Re-simulate from t=0 to targetTime for deterministic scrubbing & telemetry chart
   const runSimulationUpToTime = (targetT: number) => {
     let currentGrid = Array.from({ length: GRID_ROWS }, () => Array(GRID_COLS).fill(0));
     const currentSuppressantInfo = SUPPRESSANT_OPTIONS.find(s => s.id === selectedSuppressant);
@@ -142,6 +163,8 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
       alarmed: false,
       alarmTimeSeconds: null as number | null,
     }));
+
+    const history: Array<{ time: number; detAlpha: number; detBeta: number; detGamma: number }> = [];
 
     for (let t = 0; t <= targetT; t += dt) {
       const nextGrid = Array.from({ length: GRID_ROWS }, () => Array(GRID_COLS).fill(0));
@@ -180,10 +203,14 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
 
       currentGrid = nextGrid;
 
-      // Update detector alarms along the timeline
+      // Update detector alarms
+      let anyJustAlarmed = false;
       localDetectors = localDetectors.map(det => {
         const localConcentration = currentGrid[det.y][det.x];
         const currentObs = Number((localConcentration * 0.08).toFixed(2));
+        const justAlarmed = !det.alarmed && currentObs >= det.alarmThreshold;
+        if (justAlarmed) anyJustAlarmed = true;
+
         const alarmed = det.alarmed || currentObs >= det.alarmThreshold;
         const alarmTime = det.alarmed 
           ? det.alarmTimeSeconds 
@@ -198,31 +225,43 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
           alarmTimeSeconds: alarmTime,
         };
       });
+
+      if (anyJustAlarmed && soundEnabled) {
+        playAlarmBeep(true);
+      }
+
+      // Record point for graph every 2 seconds
+      if (Math.round(t * 10) % 20 === 0) {
+        history.push({
+          time: Number(t.toFixed(1)),
+          detAlpha: localDetectors[0]?.currentObscuration || 0,
+          detBeta: localDetectors[1]?.currentObscuration || 0,
+          detGamma: localDetectors[2]?.currentObscuration || 0,
+        });
+      }
     }
 
     smokeGridRef.current = currentGrid;
     setDetectors(localDetectors);
-    setRenderCounter(c => c + 1);
+    setTelemetryHistory(history);
+    setRenderTrigger(c => c + 1);
   };
 
-  // Step simulation forward by dt (seconds)
+  // Step simulation forward by dt
   const stepSimulation = (dt: number) => {
     const grid = smokeGridRef.current;
     const nextGrid = Array.from({ length: GRID_ROWS }, () => Array(GRID_COLS).fill(0));
 
-    // Suppressant sink coefficient Lambda
     const currentSuppressantInfo = SUPPRESSANT_OPTIONS.find(s => s.id === selectedSuppressant);
     const lambdaSink = isDischarging ? (currentSuppressantInfo?.extinctionEfficiency || 0.8) * 0.45 : 0.01;
 
-    // Source generation rate at fireCell
-    // Driven by material HRR and soot yield
     const sourceRate = isDischarging 
       ? 0.5 
       : physics.flameState === 'EXTINGUISHED' 
       ? 0.0 
       : (material.sootYield * 120 + material.baseHrr * 0.02) * (atmosphere.oxygen / 0.21);
 
-    const Ds = 0.04; // Diffusion coefficient m²/s
+    const Ds = 0.04;
     const dx = CELL_SIZE_M;
     const dy = CELL_SIZE_M;
 
@@ -230,53 +269,45 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
       for (let x = 0; x < GRID_COLS; x++) {
         const C = grid[y][x];
 
-        // Neighbors
         const C_left = x > 0 ? grid[y][x - 1] : C;
         const C_right = x < GRID_COLS - 1 ? grid[y][x + 1] : C;
         const C_up = y > 0 ? grid[y - 1][x] : C;
         const C_down = y < GRID_ROWS - 1 ? grid[y + 1][x] : C;
 
-        // Diffusion: D * (d2C/dx2 + d2C/dy2)
         const d2C_dx2 = (C_right - 2 * C + C_left) / (dx * dx);
         const d2C_dy2 = (C_down - 2 * C + C_up) / (dy * dy);
         const diffusion = Ds * (d2C_dx2 + d2C_dy2);
 
-        // Advection: - (u * dC/dx + v * dC/dy)
-        // Horizontal flow u from left inlet to right outlet
         const u = uVent * (1.0 + (x / GRID_COLS) * 0.2);
-        // Vertical buoyant lift v points UP (negative y index)
-        // In micro-g (sqrtG = 0), v is 0!
         const v = -uBuoyant * (1.0 - y / GRID_ROWS);
 
-        // Upwind differencing
         const dC_dx = u > 0 ? (C - C_left) / dx : (C_right - C) / dx;
         const dC_dy = v < 0 ? (C_down - C) / dy : (C - C_up) / dy;
         const advection = -(u * dC_dx + v * dC_dy);
 
-        // Source term
         const isSource = x === fireCell.x && y === fireCell.y;
         const S = isSource ? sourceRate : 0;
 
-        // Sink term (exhaust vent at x=11, y=5 and suppressant)
         const isExhaust = x === GRID_COLS - 1 && y >= GRID_ROWS - 2;
         const exhaustSink = isExhaust ? 0.15 * C : 0;
         const sink = lambdaSink * C + exhaustSink;
 
-        // Transient Euler step
         const dC_dt = advection + diffusion + S - sink;
-        const newC = Math.max(0, Math.min(100, C + dC_dt * dt));
-        nextGrid[y][x] = newC;
+        nextGrid[y][x] = Math.max(0, Math.min(100, C + dC_dt * dt));
       }
     }
 
     smokeGridRef.current = nextGrid;
 
-    // Update Detectors Obscuration & Time-to-Alarm
+    // Check alarms
+    let anyAlarmTriggered = false;
     setDetectors(prevDetectors =>
       prevDetectors.map(det => {
         const localConcentration = nextGrid[det.y][det.x];
-        // Obscuration %/m is proportional to smoke concentration
         const currentObs = Number((localConcentration * 0.08).toFixed(2));
+        const justAlarmed = !det.alarmed && currentObs >= det.alarmThreshold;
+        if (justAlarmed) anyAlarmTriggered = true;
+
         const alarmed = det.alarmed || currentObs >= det.alarmThreshold;
         const alarmTime = det.alarmed 
           ? det.alarmTimeSeconds 
@@ -293,7 +324,26 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
       })
     );
 
-    setRenderCounter(c => c + 1);
+    if (anyAlarmTriggered && soundEnabled) {
+      playAlarmBeep(true);
+    }
+
+    // Append to graph history
+    setTelemetryHistory(prev => {
+      const last = prev[prev.length - 1];
+      if (last && Math.abs(last.time - simTime) < 1.0) return prev;
+      return [
+        ...prev.slice(-40),
+        {
+          time: Number(simTime.toFixed(1)),
+          detAlpha: Number((nextGrid[detectors[0].y][detectors[0].x] * 0.08).toFixed(2)),
+          detBeta: Number((nextGrid[detectors[1].y][detectors[1].x] * 0.08).toFixed(2)),
+          detGamma: Number((nextGrid[detectors[2].y][detectors[2].x] * 0.08).toFixed(2)),
+        }
+      ];
+    });
+
+    setRenderTrigger(c => c + 1);
   };
 
   // Timer loop
@@ -312,7 +362,6 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
           return nextTime;
         });
 
-        // Handle active suppressant countdown
         if (isDischarging) {
           setSuppressantActiveRemaining(prev => {
             if (prev <= dt) {
@@ -325,9 +374,8 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
       }, 100);
     }
     return () => clearInterval(interval);
-  }, [isPlaying, simSpeed, isDischarging, fireCell, selectedSuppressant, atmosphere, material]);
+  }, [isPlaying, simSpeed, isDischarging, fireCell, selectedSuppressant, atmosphere, material, soundEnabled]);
 
-  // Click handler for grid cells
   const handleCellClick = (x: number, y: number) => {
     if (activePlacementTool === 'FIRE') {
       setFireCell({ x, y });
@@ -348,34 +396,48 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
     const info = SUPPRESSANT_OPTIONS.find(s => s.id === selectedSuppressant);
     setIsDischarging(true);
     setSuppressantActiveRemaining(info?.dischargeDurationSec || 10);
+    if (soundEnabled) {
+      playSuppressantDischargeSound(true);
+    }
     if (!isPlaying) setIsPlaying(true);
   };
 
   const currentSuppressantInfo = SUPPRESSANT_OPTIONS.find(s => s.id === selectedSuppressant);
+  const anyDetectorAlarmed = detectors.some(d => d.alarmed);
 
   return (
-    <div className="p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 max-w-[1920px] mx-auto font-mono">
+    <div className="p-4 max-w-[1920px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 font-mono text-xs">
       
-      {/* LEFT & CENTER (8 Cols): 2D Finite-Difference Habitat Cabin Grid */}
+      {/* LEFT & CENTER (8 Cols): 2D Finite-Difference Habitat Cabin Grid & Transient Chart */}
       <div className="lg:col-span-8 flex flex-col gap-3">
         
-        {/* Habitat Grid Controls Header */}
+        {/* Controls Toolbar */}
         <div className="bg-obsidian-surface border border-obsidian-border rounded-sm p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2">
             <Wind className="w-4 h-4 text-cryo-cyan" />
-            <span className="font-semibold text-white tracking-micro uppercase text-[11px]">
-              Transient Cabin Smoke Advection-Diffusion Solver
+            <span className="font-semibold text-white uppercase tracking-micro text-[11px]">
+              Habitat Smoke Transport & Suppression Solver
             </span>
-            <span className="text-[10px] bg-obsidian-elevated px-2 py-0.5 rounded border border-obsidian-border text-slate-400">
-              6.0m × 3.0m Habitat Cross-Section
-            </span>
+            {anyDetectorAlarmed && (
+              <span className="flex items-center gap-1 text-plasma-red bg-plasma-red/20 border border-plasma-red/40 px-2 py-0.5 rounded text-[10px] font-bold animate-pulse">
+                <BellRing className="w-3 h-3" />
+                CABIN ALARM ACTIVE
+              </span>
+            )}
           </div>
 
-          {/* Time Scrubber & Playback Controls */}
           <div className="flex items-center gap-3">
             <button
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              className="p-1.5 rounded bg-obsidian-deep border border-obsidian-border text-slate-400 hover:text-white"
+              title={soundEnabled ? 'Mute Alarm Audio' : 'Enable Alarm Audio'}
+            >
+              {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-cryo-glow" /> : <VolumeX className="w-3.5 h-3.5 text-slate-500" />}
+            </button>
+
+            <button
               onClick={() => setIsPlaying(!isPlaying)}
-              className={`px-3 py-1 rounded flex items-center gap-1.5 text-xs font-bold transition-colors ${
+              className={`px-3 py-1.5 rounded flex items-center gap-1.5 font-bold transition-colors ${
                 isPlaying 
                   ? 'bg-thermal-amber/20 text-thermal-amber border border-thermal-amber/50' 
                   : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 hover:bg-emerald-500/30'
@@ -387,26 +449,24 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
 
             <button
               onClick={handleReset}
-              className="p-1 rounded bg-obsidian-deep hover:bg-obsidian-elevated text-slate-400 hover:text-white border border-obsidian-border"
+              className="p-1.5 rounded bg-obsidian-deep hover:bg-obsidian-elevated text-slate-400 hover:text-white border border-obsidian-border"
               title="Reset Simulation"
             >
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
 
-            {/* Speed Multipliers */}
-            <div className="flex items-center gap-1 bg-obsidian-deep px-1.5 py-0.5 rounded border border-obsidian-border text-[10px]">
+            <div className="flex items-center gap-1 bg-obsidian-deep px-1.5 py-1 rounded border border-obsidian-border text-[10px]">
               {([1, 2, 4] as const).map(sp => (
                 <button
                   key={sp}
                   onClick={() => setSimSpeed(sp)}
-                  className={`px-1 rounded ${simSpeed === sp ? 'text-cryo-glow font-bold bg-cryo-cyan/20' : 'text-slate-500'}`}
+                  className={`px-1.5 py-0.2 rounded ${simSpeed === sp ? 'text-cryo-glow font-bold bg-cryo-cyan/20' : 'text-slate-500'}`}
                 >
                   {sp}x
                 </button>
               ))}
             </div>
 
-            {/* Time Readout */}
             <div className="text-right min-w-[75px]">
               <span className="text-[10px] text-slate-400">T = </span>
               <span className="font-bold text-white text-xs font-mono-numbers">{simTime.toFixed(1)}s</span>
@@ -416,7 +476,7 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
         </div>
 
         {/* Time Slider Scrubber */}
-        <div className="bg-obsidian-deep/80 px-4 py-2 border border-obsidian-border rounded-sm flex items-center gap-3 text-xs">
+        <div className="bg-obsidian-deep px-4 py-2 border border-obsidian-border rounded-sm flex items-center gap-3 text-xs">
           <Clock className="w-3.5 h-3.5 text-slate-400" />
           <input
             type="range"
@@ -431,10 +491,10 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
             }}
             className="flex-1 accent-cryo-cyan h-1.5 bg-obsidian-elevated rounded cursor-pointer"
           />
-          <span className="text-[10px] text-slate-400">Scrub Time</span>
+          <span className="text-[10px] text-slate-400">Deterministic Time Scrubber</span>
         </div>
 
-        {/* Placement Selector Pills */}
+        {/* Placement Selector Buttons */}
         <div className="flex items-center gap-2 flex-wrap text-xs">
           <span className="text-[10px] text-slate-400 uppercase tracking-micro">INTERACTIVE PLACEMENT:</span>
           
@@ -447,7 +507,7 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
             }`}
           >
             <Flame className="w-3.5 h-3.5 text-plasma-red" />
-            Set Fire Origin [{fireCell.x}, {fireCell.y}]
+            Set Fire Source [{fireCell.x}, {fireCell.y}]
           </button>
 
           <button
@@ -458,7 +518,7 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
                 : 'bg-obsidian-surface border-obsidian-border text-slate-300'
             }`}
           >
-            Move Det Alpha
+            Move Det α (Ceiling)
           </button>
 
           <button
@@ -469,7 +529,7 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
                 : 'bg-obsidian-surface border-obsidian-border text-slate-300'
             }`}
           >
-            Move Det Beta
+            Move Det β (Central)
           </button>
 
           <button
@@ -480,7 +540,7 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
                 : 'bg-obsidian-surface border-obsidian-border text-slate-300'
             }`}
           >
-            Move Det Gamma
+            Move Det γ (Exhaust)
           </button>
 
           {activePlacementTool !== 'NONE' && (
@@ -492,7 +552,6 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
 
         {/* 2D Habitat Grid Visualizer */}
         <div className="bg-obsidian-surface border border-obsidian-border rounded-sm p-4 relative overflow-hidden">
-          {/* Airflow Inflow / Exhaust Labels */}
           <div className="flex justify-between items-center text-[10px] text-slate-500 mb-2 font-mono">
             <span className="flex items-center gap-1 text-cryo-cyan">
               ← ECLSS Supply Duct ({uVent.toFixed(2)} m/s Forced Air)
@@ -515,11 +574,6 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
                 const detGamma = detectors.find(d => d.id === 'det_gamma' && d.x === x && d.y === y);
                 const anyDet = detAlpha || detBeta || detGamma;
 
-                // Color calculation based on smoke concentration
-                // 0% -> deep obsidian
-                // 20% -> hazy slate
-                // 50% -> dark smoke amber
-                // 80%+ -> dense dark smoke
                 let cellBg = 'rgba(15, 23, 42, 0.4)';
                 if (conc > 1) {
                   const alpha = Math.min(0.95, 0.2 + conc * 0.008);
@@ -539,7 +593,6 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
                         : 'border-white/5 hover:border-cryo-cyan/50'
                     }`}
                   >
-                    {/* Top indicator: cell coords or detector badge */}
                     <div className="flex justify-between items-center text-[8px] font-mono leading-none">
                       <span className="text-slate-500">{x},{y}</span>
                       {detAlpha && (
@@ -559,7 +612,6 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
                       )}
                     </div>
 
-                    {/* Center Icon */}
                     <div className="flex items-center justify-center">
                       {isFire && (
                         <Flame className="w-5 h-5 text-plasma-red animate-bounce" />
@@ -569,7 +621,6 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
                       )}
                     </div>
 
-                    {/* Bottom readout: concentration % */}
                     <div className="text-[9px] font-mono-numbers text-right text-slate-300">
                       {conc > 0.1 ? `${conc.toFixed(0)}%` : ''}
                     </div>
@@ -579,28 +630,62 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
             )}
           </div>
 
-          {/* Advection Streamlines Hint */}
           <div className="mt-2 text-[10px] text-slate-500 flex items-center justify-between">
             <span>Grid Resolution: Δx=0.5m, Δy=0.5m | Solved via Upwind Advection-Diffusion PDE</span>
             {isDischarging && (
               <span className="text-thermal-amber font-bold flex items-center gap-1 animate-pulse">
-                <Droplet className="w-3.5 h-3.5" /> SUPPRESSANT ACTIVELY DISCHARGING ({suppressantActiveRemaining.toFixed(1)}s remaining)
+                <Droplet className="w-3.5 h-3.5" /> SUPPRESSANT DISCHARGING ({suppressantActiveRemaining.toFixed(1)}s)
               </span>
             )}
           </div>
         </div>
 
+        {/* Real-time Obscuration Transient Telemetry Chart */}
+        <div className="bg-obsidian-surface border border-obsidian-border rounded-sm p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-slate-300 font-semibold uppercase tracking-micro text-[11px] flex items-center gap-1.5">
+              <Activity className="w-3.5 h-3.5 text-cryo-cyan" />
+              Transient Smoke Obscuration Curve (% / m)
+            </span>
+            <div className="flex items-center gap-3 text-[10px]">
+              <span className="text-sky-400">Det α (Ceiling)</span>
+              <span className="text-emerald-400">Det β (Aisle)</span>
+              <span className="text-purple-400">Det γ (Exhaust)</span>
+              <span className="text-plasma-red font-bold">1.5% Threshold</span>
+            </div>
+          </div>
+
+          <div className="w-full h-36">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={telemetryHistory} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" />
+                <XAxis dataKey="time" stroke="#64748B" tick={{ fontSize: 9, fill: '#64748B' }} tickFormatter={v => `${v}s`} />
+                <YAxis stroke="#64748B" tick={{ fontSize: 9, fill: '#64748B' }} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#0B0F17', borderColor: 'rgba(255,255,255,0.1)', fontSize: '11px', fontFamily: 'JetBrains Mono' }}
+                  formatter={(val: any) => [`${val} %/m`, '']}
+                  labelFormatter={lbl => `T = ${lbl}s`}
+                />
+                <ReferenceLine y={1.5} stroke="#EF4444" strokeDasharray="3 3" label={{ value: 'ALARM', fill: '#EF4444', fontSize: 8 }} />
+                <Line type="monotone" dataKey="detAlpha" stroke="#38BDF8" strokeWidth={1.5} dot={false} name="Det Alpha" />
+                <Line type="monotone" dataKey="detBeta" stroke="#10B981" strokeWidth={1.5} dot={false} name="Det Beta" />
+                <Line type="monotone" dataKey="detGamma" stroke="#C084FC" strokeWidth={1.5} dot={false} name="Det Gamma" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
       </div>
 
-      {/* RIGHT PANEL (4 Cols): Detector Status, Time-to-Alarm & Suppressant Controls */}
-      <div className="lg:col-span-4 flex flex-col gap-3 text-xs">
+      {/* RIGHT COLUMN (4 Cols): Detector Status, Time-to-Alarm & Suppressant Controls */}
+      <div className="lg:col-span-4 flex flex-col gap-3">
         
         {/* Detector Status & Time-to-Alarm HUD */}
-        <div className="bg-obsidian-surface border border-obsidian-border rounded-sm p-3">
-          <div className="flex items-center justify-between pb-2 mb-2 border-b border-obsidian-border">
+        <div className="bg-obsidian-surface border border-obsidian-border rounded-sm p-4">
+          <div className="flex items-center justify-between pb-2 mb-3 border-b border-obsidian-border">
             <span className="text-slate-300 font-semibold uppercase tracking-micro text-[11px] flex items-center gap-1.5">
               <Radio className="w-3.5 h-3.5 text-cryo-cyan" />
-              Smoke Detection Telemetry
+              Sensor Detection Readouts
             </span>
             <span className="text-[10px] text-slate-400">Alarm Limit: 1.2–1.8 %/m</span>
           </div>
@@ -609,9 +694,9 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
             {detectors.map(det => (
               <div 
                 key={det.id}
-                className={`p-2 rounded border text-[11px] ${
+                className={`p-2.5 rounded border text-[11px] ${
                   det.alarmed 
-                    ? 'bg-plasma-red/15 border-plasma-red/60 text-white' 
+                    ? 'bg-plasma-red/15 border-plasma-red/60 text-white shadow-sm shadow-plasma-red/20' 
                     : 'bg-obsidian-deep border-obsidian-border text-slate-300'
                 }`}
               >
@@ -624,13 +709,13 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
                   </span>
                 </div>
                 <div className="text-[10px] text-slate-400 mb-1">
-                  Sensor Type: {det.type} | Pos: [{det.x}, {det.y}]
+                  Sensor: {det.type} | Pos: [{det.x}, {det.y}]
                 </div>
                 <div className="flex justify-between text-[10px]">
                   <span>Obscuration: <strong className={det.alarmed ? 'text-plasma-red' : 'text-slate-200'}>{det.currentObscuration.toFixed(2)} %/m</strong></span>
                   <span>Threshold: {det.alarmThreshold.toFixed(1)} %/m</span>
                 </div>
-                <div className="flex justify-between text-[10px] pt-1 border-t border-white/5 mt-1">
+                <div className="flex justify-between text-[10px] pt-1.5 border-t border-white/5 mt-1.5">
                   <span>Time-to-Alarm (T_detect):</span>
                   <span className="font-bold text-thermal-amber font-mono-numbers">
                     {det.alarmTimeSeconds !== null ? `${det.alarmTimeSeconds.toFixed(1)} s` : 'Pending (No Alarm)'}
@@ -642,9 +727,9 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
         </div>
 
         {/* Suppressant Selection & Microgravity Warning System */}
-        <div className="bg-obsidian-surface border border-obsidian-border rounded-sm p-3 flex-1 flex flex-col justify-between">
+        <div className="bg-obsidian-surface border border-obsidian-border rounded-sm p-4 flex-1 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between pb-2 mb-2 border-b border-obsidian-border">
+            <div className="flex items-center justify-between pb-2 mb-3 border-b border-obsidian-border">
               <span className="text-slate-300 font-semibold uppercase tracking-micro text-[11px] flex items-center gap-1.5">
                 <Droplet className="w-3.5 h-3.5 text-thermal-amber" />
                 Suppressant Comparative Engine
@@ -652,15 +737,14 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
               <span className="text-[10px] text-slate-400">NASA Habitability</span>
             </div>
 
-            {/* Suppressant Selector */}
-            <div className="space-y-1.5 mb-3">
+            <div className="space-y-2 mb-3">
               {SUPPRESSANT_OPTIONS.map(sup => {
                 const isSelected = selectedSuppressant === sup.id;
                 return (
                   <button
                     key={sup.id}
                     onClick={() => setSelectedSuppressant(sup.id)}
-                    className={`w-full text-left p-2 rounded border transition-colors ${
+                    className={`w-full text-left p-2.5 rounded border transition-colors ${
                       isSelected 
                         ? 'bg-thermal-amber/20 border-thermal-amber text-white font-semibold' 
                         : 'bg-obsidian-deep border-obsidian-border text-slate-400 hover:text-slate-200'
@@ -680,22 +764,20 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
               })}
             </div>
 
-            {/* Microgravity Specific Warning Card */}
             {currentSuppressantInfo && (
-              <div className="p-2.5 rounded bg-amber-950/40 border border-amber-500/40 text-amber-200 text-[10px] leading-relaxed mb-3">
+              <div className="p-3 rounded bg-amber-950/40 border border-amber-500/40 text-amber-200 text-[10.5px] leading-relaxed mb-3">
                 <div className="flex items-center gap-1 font-bold text-thermal-amber mb-1">
                   <AlertOctagon className="w-3.5 h-3.5 flex-shrink-0" />
                   MICROGRAVITY DISPERSION WARNING:
                 </div>
                 {currentSuppressantInfo.microgravityWarning}
-                <div className="mt-1 text-slate-400">
+                <div className="mt-1 text-slate-400 text-[10px]">
                   <span className="text-slate-300 font-semibold">Mechanism:</span> {currentSuppressantInfo.mechanism}
                 </div>
               </div>
             )}
           </div>
 
-          {/* Suppressant Discharge Button */}
           <button
             onClick={handleDischargeSuppressant}
             disabled={isDischarging}

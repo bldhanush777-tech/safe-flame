@@ -161,3 +161,40 @@ export interface SmokeDetector {
   alarmed: boolean;
   alarmTimeSeconds: number | null;
 }
+
+export type AppTheme = 'obsidian' | 'apollo' | 'cryo' | 'mars';
+
+export interface AISettings {
+  voiceGender: 'male' | 'female';
+  autoSpeak: boolean;
+  speechRate: number;
+  speechPitch: number;
+  soundEffects: boolean;
+  pressureUnit: 'psi' | 'kpa';
+  activeTheme: AppTheme;
+}
+
+export interface SurfaceScanResult {
+  id: string;
+  sampleName: string;
+  detectedMaterialId: MaterialId;
+  charDepthMm: number;
+  pyrolysisPercentage: number;
+  residualTensileIntegrity: number;
+  flammabilityRiskLevel: 'LOW' | 'MODERATE' | 'HIGH' | 'CRITICAL';
+  recommendedMaxO2: number;
+  recommendedMaxVentilation: number;
+  thermalAnomalyDescription: string;
+  timestamp: string;
+  imageUrl: string;
+}
+
+export interface AIMessage {
+  id: string;
+  sender: 'user' | 'astra';
+  text: string;
+  timestamp: string;
+  actionTaken?: string;
+  actionType?: 'NAVIGATE' | 'PRESET' | 'MATERIAL' | 'ACTION' | 'THEME' | 'INFO';
+}
+
