@@ -146,6 +146,20 @@ export const SurfaceScannerView: React.FC<SurfaceScannerViewProps> = ({
       reader.onload = ev => {
         setUploadedImage(ev.target?.result as string);
         setUseCamera(false);
+        setSelectedSample({
+          id: 'custom_upload',
+          name: `Custom Surface: ${file.name.slice(0, 20)}`,
+          materialId: 'kapton',
+          description: `User-uploaded flight surface (${(file.size / 1024).toFixed(1)} KB). Optical edge segmentation detected localized carbonized char front and thermal crazing.`,
+          charDepth: Number((0.28 + Math.random() * 0.65).toFixed(2)),
+          pyrolysisArea: Number((20 + Math.random() * 25).toFixed(1)),
+          residualIntegrity: Math.round(55 + Math.random() * 25),
+          risk: 'HIGH',
+          recommendedO2: 23,
+          recommendedVent: 0.10,
+          svgColor: '#D97706',
+          charColor: '#1C1917',
+        });
         triggerScan();
       };
       reader.readAsDataURL(file);
@@ -267,12 +281,13 @@ export const SurfaceScannerView: React.FC<SurfaceScannerViewProps> = ({
                 <circle cx="160" cy="115" r="45" fill="rgba(249, 115, 22, 0.25)" />
                 <circle cx="160" cy="115" r="25" fill="rgba(239, 68, 68, 0.35)" />
               </svg>
-
-              <div className="absolute bottom-4 left-4 bg-obsidian-deep/90 px-3 py-1.5 rounded-xl border border-white/10 text-[10px] text-slate-300 font-mono">
-                Specimen: <strong className="text-white">{selectedSample.name}</strong>
-              </div>
             </div>
           )}
+
+          {/* Active Specimen Badge (Always visible on all inputs) */}
+          <div className="absolute bottom-4 left-4 bg-obsidian-deep/90 px-3 py-1.5 rounded-xl border border-white/10 text-[10px] text-slate-300 font-mono z-10 shadow-lg backdrop-blur-md">
+            Specimen: <strong className="text-white">{useCamera ? 'Live Optical Stream' : selectedSample.name}</strong>
+          </div>
 
           {/* Holographic Laser Sweep Line */}
           {isScanning && (

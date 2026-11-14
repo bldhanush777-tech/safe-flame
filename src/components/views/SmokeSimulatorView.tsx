@@ -332,13 +332,17 @@ export const SmokeSimulatorView: React.FC<SmokeSimulatorViewProps> = ({
     setTelemetryHistory(prev => {
       const last = prev[prev.length - 1];
       if (last && Math.abs(last.time - simTime) < 1.0) return prev;
+      const alphaVal = detectors[0] && nextGrid[detectors[0].y] ? nextGrid[detectors[0].y][detectors[0].x] ?? 0 : 0;
+      const betaVal = detectors[1] && nextGrid[detectors[1].y] ? nextGrid[detectors[1].y][detectors[1].x] ?? 0 : 0;
+      const gammaVal = detectors[2] && nextGrid[detectors[2].y] ? nextGrid[detectors[2].y][detectors[2].x] ?? 0 : 0;
+
       return [
         ...prev.slice(-40),
         {
           time: Number(simTime.toFixed(1)),
-          detAlpha: Number((nextGrid[detectors[0].y][detectors[0].x] * 0.08).toFixed(2)),
-          detBeta: Number((nextGrid[detectors[1].y][detectors[1].x] * 0.08).toFixed(2)),
-          detGamma: Number((nextGrid[detectors[2].y][detectors[2].x] * 0.08).toFixed(2)),
+          detAlpha: Number((alphaVal * 0.08).toFixed(2)),
+          detBeta: Number((betaVal * 0.08).toFixed(2)),
+          detGamma: Number((gammaVal * 0.08).toFixed(2)),
         }
       ];
     });

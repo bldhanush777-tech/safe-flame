@@ -523,30 +523,32 @@ export const FlameVisualizer: React.FC<FlameVisualizerProps> = ({
   }, [atmosphere, material, physics, showVectors, showHeatFlux, showParticles, effectiveState]);
 
   return (
-    <div className="flex flex-col h-full bg-obsidian-surface border border-obsidian-border rounded-sm relative overflow-hidden corner-bracket-container corner-bracket-tl-br">
+    <div className="flex flex-col h-full glass-panel relative overflow-hidden">
       {/* Visualizer Header Toolbar */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-obsidian-border bg-obsidian-deep/80 text-xs">
-        <div className="flex items-center gap-2">
-          <Flame className="w-3.5 h-3.5 text-thermal-amber animate-pulse" />
-          <span className="font-semibold tracking-micro text-slate-200 uppercase">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-obsidian-border bg-obsidian-deep/80 text-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="squircle-icon w-7 h-7 text-thermal-amber">
+            <Flame className="w-4 h-4 animate-pulse" />
+          </div>
+          <span className="font-heading font-bold text-white text-xs tracking-tight uppercase">
             Microgravity Flame Morphology Engine
           </span>
-          <span className="font-mono text-[10px] text-cryo-cyan bg-cryo-cyan/10 px-1.5 py-0.5 rounded border border-cryo-cyan/20">
+          <span className="font-mono text-[10px] text-accent-glow bg-accent/15 px-2 py-0.5 rounded-full border border-accent/30 font-semibold">
             60 FPS LIVE
           </span>
         </div>
 
         {/* State Override Pills */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           <span className="text-[10px] text-slate-400 font-mono mr-1">STATE:</span>
           {(['AUTO', 'NORMAL', 'SMOLDER', 'EXTINGUISHED'] as const).map(st => (
             <button
               key={st}
               onClick={() => setOverrideState(st)}
-              className={`px-1.5 py-0.5 text-[9px] font-mono rounded transition-colors ${
+              className={`px-2.5 py-1 text-[10px] font-mono rounded-full transition-all btn-modern ${
                 overrideState === st
-                  ? 'bg-thermal-amber/20 text-thermal-amber border border-thermal-amber/50 font-bold'
-                  : 'text-slate-400 hover:text-slate-200 bg-obsidian-elevated/50'
+                  ? 'bg-thermal-amber/20 text-thermal-amber border border-thermal-amber/50 font-bold shadow-sm shadow-thermal-amber/20'
+                  : 'text-slate-400 hover:text-slate-200 bg-obsidian-elevated/60 border border-transparent'
               }`}
             >
               {st}
