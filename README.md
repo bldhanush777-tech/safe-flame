@@ -85,6 +85,23 @@ All calculations execute live on every slider adjustment:
 
 ---
 
+## 🌐 Live Deployment & CI/CD
+
+### 1. GitHub Pages (Automated via GitHub Actions)
+The repository includes [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) for continuous deployment:
+1. Go to **Settings** $\rightarrow$ **Pages** on your repository.
+2. Under **Build and deployment** $\rightarrow$ **Source**, select **GitHub Actions**.
+3. Every push to `main` will build and publish the live web app to:
+   ```
+   https://bldhanush777-tech.github.io/safe-flame/
+   ```
+
+### 2. Vercel (1-Click Deployment)
+- Connect this repository on [Vercel](https://vercel.com/new) and click **Deploy**.
+- Framework preset: `Vite`, build command: `npm run build`, output directory: `dist`.
+
+---
+
 ## 🏃 Getting Started
 
 ### Local Development
