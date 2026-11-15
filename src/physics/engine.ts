@@ -1,10 +1,10 @@
-import { 
-  AtmosphereState, 
-  EvidenceRecord, 
-  MaterialProperties, 
-  PhysicsOutputs, 
-  RiskLevel, 
-  SimilarityResult 
+import {
+  AtmosphereState,
+  EvidenceRecord,
+  MaterialProperties,
+  PhysicsOutputs,
+  RiskLevel,
+  SimilarityResult
 } from '../types/physics';
 
 // Mahalanobis standard deviations and weights
@@ -37,7 +37,7 @@ export function calculateSimilarityDistance(
   const dU = (record.flowVelocity - target.ventilation) / MAHALANOBIS_SIGMA.velocity;
   const dThick = (record.sampleThicknessMm - target.thicknessMm) / MAHALANOBIS_SIGMA.thickness;
 
-  const sumSquares = 
+  const sumSquares =
     MAHALANOBIS_WEIGHTS.oxygen * (dO2 * dO2) +
     MAHALANOBIS_WEIGHTS.pressure * (dP * dP) +
     MAHALANOBIS_WEIGHTS.gravity * (dG * dG) +
@@ -142,19 +142,19 @@ export function calculatePhysics(
   const maxA = primaryMatch ? primaryMatch.applicability : 0.0;
   const coverageScore = calculateParametricCoverage(target);
 
-  const avgQ = topK.length > 0 
-    ? topK.reduce((acc, curr) => acc + curr.record.qualityScore * (0.25 + 0.75 * curr.applicability), 0) / topK.length 
+  const avgQ = topK.length > 0
+    ? topK.reduce((acc, curr) => acc + curr.record.qualityScore * (0.25 + 0.75 * curr.applicability), 0) / topK.length
     : 0.15;
-  const avgR = topK.length > 0 
-    ? topK.reduce((acc, curr) => acc + curr.record.repeatability * (0.25 + 0.75 * curr.applicability), 0) / topK.length 
+  const avgR = topK.length > 0
+    ? topK.reduce((acc, curr) => acc + curr.record.repeatability * (0.25 + 0.75 * curr.applicability), 0) / topK.length
     : 0.15;
-  const avgT = topK.length > 0 
-    ? topK.reduce((acc, curr) => acc + curr.record.facilityTier * (0.25 + 0.75 * curr.applicability), 0) / topK.length 
+  const avgT = topK.length > 0
+    ? topK.reduce((acc, curr) => acc + curr.record.facilityTier * (0.25 + 0.75 * curr.applicability), 0) / topK.length
     : 0.15;
 
   // Evidence Confidence Score C
   // C = 0.25 Q + 0.15 R + 0.30 A + 0.20 C_coverage + 0.10 T
-  const confidenceScore = Math.max(0.05, Math.min(1.0, 
+  const confidenceScore = Math.max(0.05, Math.min(1.0,
     0.25 * avgQ + 0.15 * avgR + 0.30 * maxA + 0.20 * coverageScore + 0.10 * avgT
   ));
 
@@ -207,8 +207,8 @@ export function calculatePhysics(
 
   // 8. Derived Combustion Metrics
   // Effective HRR = baseHrr * (X_O2 / 0.21)^1.4 * (P / 14.7)^0.5 * (u_eff / 0.3)^0.3
-  const effectiveHrr = flameState === 'EXTINGUISHED' 
-    ? 0 
+  const effectiveHrr = flameState === 'EXTINGUISHED'
+    ? 0
     : Math.round(material.baseHrr * Math.pow(oxygenIndex, 1.4) * Math.pow(target.pressurePsi / 14.7, 0.5) * Math.pow(uEffSafe / 0.3, 0.25));
 
   // Ignition Delay: decreases with higher O2 and higher pressure
@@ -233,7 +233,7 @@ export function calculatePhysics(
   const eSuppHat = effectiveSuppressionDifficulty;
 
   const compositeRisk = Number(
-    Math.min(1.0, Math.max(0.0, 
+    Math.min(1.0, Math.max(0.0,
       0.25 * vFHat + 0.25 * hrrHat + 0.20 * sHat + 0.15 * dDelayHat + 0.15 * eSuppHat
     )).toFixed(3)
   );
